@@ -13,6 +13,7 @@ of both apps is done. Release (Milestone 5) is in progress.
 - Bun for the runtime, package manager, and scripts
 - Express + TypeScript API
 - Next.js + TypeScript web app
+- TanStack Query for client-side data fetching (list & detail)
 - PostgreSQL with Prisma
 
 ## Architecture
@@ -42,7 +43,11 @@ ledgerflow/
   access in repositories. See [docs/api.md](./docs/api.md).
 - **Web** — each page is a thin shell over a feature hook (`use-transaction-list`,
   `use-transaction-detail`, `use-create-transaction`, `use-auth-form`) plus
-  focused presentational pieces. Money is rendered from the API's string amounts.
+  focused presentational pieces. The transaction list and detail fetch
+  client-side through **TanStack Query** (`useQuery` for the list, `useMutation`
+  for the detail's transition and description writes); the **dashboard stays
+  server-rendered** via `serverFetch`. Money is rendered from the API's string
+  amounts.
 
 ## Features
 

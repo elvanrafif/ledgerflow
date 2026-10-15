@@ -3,7 +3,7 @@
 Single source of truth for where the build stands. **Read this first** at the
 start of a session, before touching code.
 
-Last updated: 2026-10-16 (SOLID refactor + Milestone 5 groundwork)
+Last updated: 2026-10-16 (SOLID refactor + Milestone 5 groundwork + TanStack Query)
 
 ## Next up
 
@@ -13,6 +13,13 @@ responsibilities without changing behavior: the API gained service + repository
 layers (routes are now thin transport and no longer import Prisma), and the web
 app gained per-page feature hooks plus focused presentational components (no file
 over ~104 lines; the list and detail pages were 286 and 256).
+
+**Client data fetching now uses TanStack Query.** The transaction list reads
+through `useQuery` and the detail's transition/description writes run through
+`useMutation`; the dashboard stays server-rendered via `serverFetch`. Behavior is
+unchanged — 81 tests still pass, typecheck clean, `next build` serves all 8
+routes. (The API test command now loads `apps/api/.env` via a small
+`vitest.config.ts`, fixing `bun run test` without an exported environment.)
 
 Release groundwork (no credentials needed): a security review (`docs/security-review.md`,
 advisories 5 → 1, both remaining being build/dev-only), an API reference
@@ -164,9 +171,10 @@ bun run dev:web                          # http://localhost:3000
   - `test/` — 9 suites, 28 tests, all against real PostgreSQL
 - `apps/web/` — Next.js App Router frontend (Milestone 4)
   - `src/lib/api-client.ts` — centralized `apiFetch` + `ApiError`, credentials, 401 redirect
+  - `src/lib/query-client.tsx` — TanStack Query provider (root layout)
+  - `src/features/` — per-domain hooks (list via `useQuery`, detail writes via `useMutation`) + components
   - `src/components/` — design primitives (Task 2 onward)
   - `src/app/` — routed pages (thin composition)
-  - `src/features/` — per-domain hooks + presentational components
 - `DESIGN.md` — design direction (palette, typography, dials); source of truth for UI
 - `docs/superpowers/plans/` — implementation plans
 - `docs/api.md`, `docs/security-review.md`, `docs/deployment.md` — release docs
