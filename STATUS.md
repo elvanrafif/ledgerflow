@@ -8,12 +8,13 @@ Last updated: 2026-10-15 (session 2)
 ## Next up
 
 **Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). Tasks 1-4 are done (scaffold + API client;
-tokens, fonts, primitives; login/register; dashboard). Next: **Task 5
-(transaction list)** in `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`.
-`DESIGN.md` is the source of truth; primitives in `apps/web/src/components/`,
-auth + types in `apps/web/src/lib/`. Protected pages live in the `(app)` route
-group so they share the nav shell.
+"Frontend prerequisites" below). Tasks 1-5 are done (scaffold + API client;
+tokens, fonts, primitives; login/register; dashboard; transaction list). Next:
+**Task 6 (create transaction)** in
+`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`. `DESIGN.md` is the
+source of truth; primitives in `apps/web/src/components/`, auth/types/list helpers
+in `apps/web/src/lib/`. Protected pages live in the `(app)` route group so they
+share the nav shell.
 
 ## Where we are
 
@@ -89,7 +90,7 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 - [x] Task 2 — visual foundation (tokens, fonts, 7 primitives; precise amount formatting)
 - [x] Task 3 — authentication pages (`/login`, `/register`, session redirects, field errors)
 - [x] Task 4 — dashboard summary (per-currency totals, status counts, empty/error states)
-- [ ] Task 5 — transaction list
+- [x] Task 5 — transaction list (URL-driven filters, sort, pagination, empty/error states)
 - [ ] Task 6 — create transaction
 - [ ] Task 7 — transaction detail, edit, transitions
 - [ ] Task 8 — run the app and verify every control

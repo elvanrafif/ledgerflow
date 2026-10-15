@@ -311,7 +311,7 @@ git commit -m "feat(web): add dashboard summary"
 - Consumes: `GET /api/v1/transactions?page&pageSize&status&search&sort`.
 - Produces: a filterable, sortable, paginated list with real URL state.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 it("keeps filters in the URL so the view is shareable and reloadable", async () => {
@@ -320,23 +320,23 @@ it("keeps filters in the URL so the view is shareable and reloadable", async () 
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `TransactionList` is not defined.
 
-- [ ] **Step 3: Implement the list**
+- [x] **Step 3: Implement the list**
 
 Filters, search, sort and page live in the URL. Columns come from the decision
 the reader makes here: status, amount, currency, description, created. Loading,
 empty (no rows vs. no matches, which read differently), and error states.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web
