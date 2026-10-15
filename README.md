@@ -4,6 +4,8 @@ A learning project for managing **simulated** transactions. It does not process 
 
 The product requirements are in [PRD.md](./PRD.md). The backend API is implemented and tested; the web frontend and deployment are still to come.
 
+**Where the build stands is in [STATUS.md](./STATUS.md)** — read that first, it is the single source of truth for what is done and what comes next.
+
 ## Stack
 
 - Bun for the runtime, package manager, and scripts
