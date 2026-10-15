@@ -25,6 +25,11 @@ services:
       NODE_ENV: production
       SESSION_SECRET: ${SESSION_SECRET}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+      # Web and API are served from different origins in this deployment
+      # (ledgerflow.elvanrff.id vs api-ledgerflow.elvanrff.id), so the session
+      # cookie must be SameSite=None; Secure or the browser drops it on
+      # cross-site requests and the dashboard gets a 401. See docs/deployment.md.
+      COOKIE_CROSS_SITE: "true"
       SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
     depends_on:
       postgres:
@@ -41,6 +46,7 @@ services:
       PORT: 3000
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      INTERNAL_API_URL: http://api:4000/api/v1
     depends_on:
       - api
 

@@ -85,6 +85,44 @@ describe("authentication", () => {
     expect(loggedIn.headers["set-cookie"]).toBeDefined();
   });
 
+  it("omits SameSite=Lax and adds Secure for cross-site (split-origin) deployments", async () => {
+    const email = `cross-site-${randomUUID()}@example.test`;
+    createdEmails.push(email);
+    process.env.COOKIE_CROSS_SITE = "true";
+    try {
+      const crossSiteApp = createApp(async () => {}, {
+        prisma,
+        frontendOrigin: origin,
+        sessionSecret: "cross-site-test-session-secret-long-enough",
+        nodeEnv: "production",
+      });
+      const response = await request(crossSiteApp)
+        .post("/api/v1/auth/register")
+        .set("Origin", origin)
+        .send({ name: "Cross Site", email, password: "a-long-test-password" });
+      expect(response.status).toBe(201);
+      const setCookie = response.headers["set-cookie"][0] as string;
+      expect(setCookie).toContain("SameSite=None");
+      // Browsers only accept SameSite=None together with Secure.
+      expect(setCookie).toContain("Secure");
+    } finally {
+      delete process.env.COOKIE_CROSS_SITE;
+    }
+  });
+
+  it("keeps SameSite=Lax by default (same-origin deployments)", async () => {
+    const email = `same-site-${randomUUID()}@example.test`;
+    createdEmails.push(email);
+    const response = await request(app)
+      .post("/api/v1/auth/register")
+      .set("Origin", origin)
+      .send({ name: "Same Site", email, password: "a-long-test-password" });
+    expect(response.status).toBe(201);
+    const setCookie = response.headers["set-cookie"][0] as string;
+    expect(setCookie).toContain("SameSite=Lax");
+    expect(setCookie).not.toContain("SameSite=None");
+  });
+
   it("rejects duplicate registrations and cross-origin state changes", async () => {
     const email = `duplicate-${randomUUID()}@example.test`;
     createdEmails.push(email);

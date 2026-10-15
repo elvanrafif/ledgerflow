@@ -17,6 +17,7 @@ Repositori ini monorepo (Bun workspaces): API di `apps/api`, web di `apps/web`.
 | `DATABASE_URL` | ya | `postgresql://user:pass@host:5432/db` | Disediakan platform DB |
 | `SESSION_SECRET` | ya | string acak ≥32 karakter | **Jangan** dari repo; generate acak |
 | `FRONTEND_ORIGIN` | ya | `https://app-kamu.vercel.app` | Origin web; dipakai untuk CORS + CSRF |
+| `COOKIE_CROSS_SITE` | tidak | `true` | Set `true` **hanya** bila web dan API beda origin (mis. `app.example.com` + `api.example.com`); membuat cookie `SameSite=None; Secure`. Biarkan kosong/`false` untuk same-origin. |
 | `PORT` | tidak | `4000` | Default 4000 |
 | `NODE_ENV` | ya | `production` | Mengaktifkan cookie `Secure` + pesan 500 generik |
 | `SEED_USER_PASSWORD` | tidak | — | Hanya bila menjalankan seed demo |
@@ -38,6 +39,17 @@ openssl rand -base64 48
 `NEXT_PUBLIC_API_URL` harus menunjuk ke API. Kalau web di `app.example.com` dan
 API di `api.example.com`, request yang mengubah state dari web akan ditolak 403
 bila `FRONTEND_ORIGIN` tidak cocok.
+
+**Cross-site (beda origin):** bila web dan API berada di origin berbeda (mis.
+`ledgerflow.example.com` + `api-ledgerflow.example.com`), cookie sesi default
+(`SameSite=Lax`) **tidak** dikirim pada request lintas-situs, sehingga request
+server-side ke API gagal dengan 401. Set `COOKIE_CROSS_SITE=true` di service API
+supaya cookie menjadi `SameSite=None; Secure`. Ini hanya aman di atas HTTPS; model
+CSRF tetap dijaga oleh pemeriksaan `Origin` (`FRONTEND_ORIGIN`).
+
+Alternatif tanpa ubah kode: sajikan web dan API pada **satu origin** (mis.
+`https://app.example.com` untuk web dan `https://app.example.com/api/v1` untuk
+API lewat path routing), sehingga `SameSite=Lax` sudah cukup.
 
 ---
 

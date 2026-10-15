@@ -31,10 +31,17 @@ export function cookieToken(req: Request) {
 }
 
 export function cookieOptions(context: SessionContext) {
+  const isProduction = (context.nodeEnv ?? process.env.NODE_ENV) === "production";
+  // Same-origin deployments keep the stricter Lax default. Cross-site
+  // deployments (web and API served from different origins, e.g. app.example.com
+  // -> api.example.com) must send the cookie on cross-site requests or the
+  // session never reaches the API; that requires SameSite=None, which browsers
+  // only accept together with Secure. Opt in with COOKIE_CROSS_SITE=true.
+  const crossSite = process.env.COOKIE_CROSS_SITE === "true";
   return {
     httpOnly: true,
-    secure: (context.nodeEnv ?? process.env.NODE_ENV) === "production",
-    sameSite: "lax" as const,
+    secure: isProduction,
+    sameSite: crossSite ? ("none" as const) : ("lax" as const),
     path: cookiePath,
   };
 }
