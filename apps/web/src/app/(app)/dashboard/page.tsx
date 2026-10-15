@@ -15,7 +15,9 @@ export default async function DashboardPage() {
   let summary: DashboardSummary;
   try {
     summary = await serverFetch<DashboardSummary>("/dashboard/summary");
-  } catch {
+  } catch (error) {
+    // Log the underlying cause server-side; the UI only shows a friendly message.
+    console.error(JSON.stringify({ level: "error", route: "/dashboard", code: "SUMMARY_FETCH_FAILED", message: error instanceof Error ? error.message : String(error) }));
     return (
       <ErrorState
         title="Could not load your summary"
