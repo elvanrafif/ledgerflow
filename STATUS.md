@@ -8,16 +8,16 @@ Last updated: 2026-10-15 (session 2)
 ## Next up
 
 **Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). Tasks 1-6 are done (scaffold + API client;
-tokens, fonts, primitives; login/register; dashboard; transaction list; create
-form). Next: **Task 7 (transaction detail, edit, transitions)** in
-`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`. Then Task 8 runs the
-app and verifies every control.
+"Frontend prerequisites" below). Tasks 1-7 are done (all six routed pages built
+and tested). Next: **Task 8 (run the app and verify every control)** in
+`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md` — the interactive
+click-through requires Docker + PostgreSQL and both dev servers running.
 
 ## Where we are
 
 Milestones are from PRD §15. Backend (Milestones 1-3) is done and merged to
-`main`. Frontend (Milestone 4) is in progress: Tasks 1-6 of 8 are done. Release
+`main`. Frontend (Milestone 4) is in progress: Tasks 1-7 of 8 are done (all pages
+built and unit/integration tested); Task 8 is the live click-through. Release
 (Milestone 5) has not started.
 
 | # | Milestone | Status |
@@ -91,7 +91,7 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 - [x] Task 4 — dashboard summary (per-currency totals, status counts, empty/error states)
 - [x] Task 5 — transaction list (URL-driven filters, sort, pagination, empty/error states)
 - [x] Task 6 — create transaction (idempotency key reused across retries)
-- [ ] Task 7 — transaction detail, edit, transitions
+- [x] Task 7 — transaction detail, edit, transitions (timeline, terminal confirm, 409 surfaced)
 - [ ] Task 8 — run the app and verify every control
 
 ## Known issues / follow-ups

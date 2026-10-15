@@ -407,7 +407,7 @@ git commit -m "feat(web): add transaction creation form with idempotent retries"
 - Produces: detail view with status history timeline, description editing while
   PENDING, and transition controls for permitted moves only.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 it("offers only permitted transitions and confirms before a terminal move", async () => {
@@ -421,23 +421,23 @@ it("offers only permitted transitions and confirms before a terminal move", asyn
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `TransactionDetail` is not defined.
 
-- [ ] **Step 3: Implement the detail view**
+- [x] **Step 3: Implement the detail view**
 
 History timeline shows previous status, new status, and when. Terminal moves
 require confirmation. A 409 from the API is surfaced, not swallowed, since the
 status may have changed in another tab.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web
