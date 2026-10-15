@@ -4,8 +4,9 @@
  * color and border for fast scanning. The four statuses are fixed by the API's
  * state machine: PENDING, PROCESSING, COMPLETED, FAILED.
  */
+import type { TransactionStatus } from "@/lib/types";
 
-export type TransactionStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type { TransactionStatus };
 
 export const STATUSES: readonly TransactionStatus[] = [
   "PENDING",

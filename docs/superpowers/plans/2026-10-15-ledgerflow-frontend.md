@@ -266,7 +266,7 @@ git commit -m "feat(web): add login and register pages"
 - Produces: a dashboard where the primary focus is the per-currency totals,
   since mixing them is the failure the API prevents.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 it("lists each currency total separately and never sums them", async () => {
@@ -277,22 +277,22 @@ it("lists each currency total separately and never sums them", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `DashboardPage` is not defined.
 
-- [ ] **Step 3: Implement the dashboard**
+- [x] **Step 3: Implement the dashboard**
 
 Leading with totals per currency, counts by status secondary. Empty state names
 the action that fills it.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web
