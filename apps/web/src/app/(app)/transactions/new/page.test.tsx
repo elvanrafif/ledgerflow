@@ -17,7 +17,7 @@ import NewTransactionPage from "./page";
 function captureKeys(): string[] {
   const keys: string[] = [];
   server.use(
-    http.post("*/api/v1/transactions", async ({ request }) => {
+    http.post("*/api/proxy/transactions", async ({ request }) => {
       keys.push(request.headers.get("Idempotency-Key") ?? "");
       if (keys.length === 1) {
         // First attempt: fail at the network layer (no response).
@@ -82,7 +82,7 @@ describe("NewTransactionPage", () => {
   it("sends the amount as a string and redirects on success", async () => {
     let sentBody: unknown;
     server.use(
-      http.post("*/api/v1/transactions", async ({ request }) => {
+      http.post("*/api/proxy/transactions", async ({ request }) => {
         sentBody = await request.json();
         return HttpResponse.json({ transaction: { id: "x" } }, { status: 201 });
       }),
@@ -99,7 +99,7 @@ describe("NewTransactionPage", () => {
   it("blocks an obviously invalid amount before hitting the API", async () => {
     let posted = false;
     server.use(
-      http.post("*/api/v1/transactions", () => {
+      http.post("*/api/proxy/transactions", () => {
         posted = true;
         return HttpResponse.json({ transaction: {} }, { status: 201 });
       }),

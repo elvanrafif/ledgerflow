@@ -36,20 +36,19 @@ openssl rand -base64 48
 > `NEXT_PUBLIC_*` di-*inline* saat build, jadi harus diisi **sebelum** build web.
 
 **Penting:** `FRONTEND_ORIGIN` (API) harus sama persis dengan origin web, dan
-`NEXT_PUBLIC_API_URL` harus menunjuk ke API. Kalau web di `app.example.com` dan
-API di `api.example.com`, request yang mengubah state dari web akan ditolak 403
-bila `FRONTEND_ORIGIN` tidak cocok.
+`NEXT_PUBLIC_API_URL` harus menunjuk ke API.
 
-**Cross-site (beda origin):** bila web dan API berada di origin berbeda (mis.
-`ledgerflow.example.com` + `api-ledgerflow.example.com`), cookie sesi default
-(`SameSite=Lax`) **tidak** dikirim pada request lintas-situs, sehingga request
-server-side ke API gagal dengan 401. Set `COOKIE_CROSS_SITE=true` di service API
-supaya cookie menjadi `SameSite=None; Secure`. Ini hanya aman di atas HTTPS; model
-CSRF tetap dijaga oleh pemeriksaan `Origin` (`FRONTEND_ORIGIN`).
+**Rekomendasi: sajikan web dan API pada satu origin** — web di
+`https://app.example.com` dan API di `https://app.example.com/api/v1` (path
+routing). Ini yang paling sederhana: cookie sesi berada di domain yang sama
+sehingga Server Components (`cookies()`) bisa membacanya, CORS tidak diperlukan,
+dan `SameSite=Lax` sudah cukup.
 
-Alternatif tanpa ubah kode: sajikan web dan API pada **satu origin** (mis.
-`https://app.example.com` untuk web dan `https://app.example.com/api/v1` untuk
-API lewat path routing), sehingga `SameSite=Lax` sudah cukup.
+> **Hindari web dan API di origin berbeda** (mis. `app.example.com` +
+> `api.example.com`). Pada mode split-origin, cookie di-set milik domain API,
+> sedangkan Server Components membaca cookie domain web, sehingga fetch
+> server-side (mis. `/dashboard`) tidak membawa sesi dan gagal 401. Lihat catatan
+> `COOKIE_CROSS_SITE` di bawah bila kamu tetap memilih split-origin.
 
 ---
 

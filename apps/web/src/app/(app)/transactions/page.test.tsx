@@ -33,7 +33,7 @@ function pageData(items: Transaction[], total = items.length): TransactionListRe
 
 /** Respond to GET /transactions with the given body. */
 function mockList(body: TransactionListResponse) {
-  server.use(http.get("*/api/v1/transactions", () => HttpResponse.json(body)));
+  server.use(http.get("*/api/proxy/transactions", () => HttpResponse.json(body)));
 }
 
 beforeEach(() => push.mockReset());
@@ -96,7 +96,7 @@ describe("TransactionList", () => {
 
   it("surfaces a load failure instead of an empty table", async () => {
     server.use(
-      http.get("*/api/v1/transactions", () =>
+      http.get("*/api/proxy/transactions", () =>
         HttpResponse.json({ error: { code: "INTERNAL_ERROR", message: "boom" } }, { status: 500 }),
       ),
     );

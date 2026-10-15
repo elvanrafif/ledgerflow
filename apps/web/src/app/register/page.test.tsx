@@ -14,7 +14,7 @@ beforeEach(() => {
   push.mockReset();
   // Default: no active session, so the auth-page check resolves to null.
   server.use(
-    http.get("*/api/v1/auth/me", () =>
+    http.get("*/api/proxy/auth/me", () =>
       HttpResponse.json({ error: { code: "UNAUTHENTICATED", message: "Authentication is required" } }, { status: 401 }),
     ),
   );
@@ -23,7 +23,7 @@ beforeEach(() => {
 describe("RegisterPage", () => {
   it("shows field-level validation errors returned by the API", async () => {
     server.use(
-      http.post("*/api/v1/auth/register", () =>
+      http.post("*/api/proxy/auth/register", () =>
         HttpResponse.json(
           {
             error: {
@@ -48,7 +48,7 @@ describe("RegisterPage", () => {
 
   it("redirects to /dashboard after a successful registration", async () => {
     server.use(
-      http.post("*/api/v1/auth/register", () =>
+      http.post("*/api/proxy/auth/register", () =>
         HttpResponse.json(
           { user: { id: "u1", name: "Ada", email: "ada@example.com" } },
           { status: 201 },
@@ -67,7 +67,7 @@ describe("RegisterPage", () => {
 
   it("surfaces a non-field error (e.g. duplicate email) as a form error", async () => {
     server.use(
-      http.post("*/api/v1/auth/register", () =>
+      http.post("*/api/proxy/auth/register", () =>
         HttpResponse.json(
           { error: { code: "EMAIL_ALREADY_EXISTS", message: "An account with this email already exists" } },
           { status: 409 },
@@ -86,7 +86,7 @@ describe("RegisterPage", () => {
 
   it("redirects an already-authenticated visitor away from /register", async () => {
     server.use(
-      http.get("*/api/v1/auth/me", () =>
+      http.get("*/api/proxy/auth/me", () =>
         HttpResponse.json({ user: { id: "u1", name: "Ada", email: "ada@example.com" } }),
       ),
     );

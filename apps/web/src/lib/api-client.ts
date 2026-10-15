@@ -34,6 +34,9 @@ export interface ApiRequestOptions extends RequestInit {
 }
 
 function baseUrl(): string {
+  // In the browser, every call goes through the same-origin proxy so the
+  // session cookie stays on the web origin (see app/api/proxy/[...path]).
+  if (typeof window !== "undefined") return "/api/proxy";
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
   return (configured && configured.length > 0 ? configured : DEFAULT_API_BASE_URL).replace(/\/+$/, "");
 }

@@ -48,7 +48,7 @@ describe("TransactionDetail — transitions", () => {
 
   it("Escape closes the confirmation dialog without transitioning", async () => {
     const posted = vi.fn();
-    server.use(http.post("*/api/v1/transactions/:id/status", () => {
+    server.use(http.post("*/api/proxy/transactions/:id/status", () => {
       posted();
       return HttpResponse.json({ transaction: {} });
     }));
@@ -70,7 +70,7 @@ describe("TransactionDetail — transitions", () => {
 
   it("surfaces a 409 from the API instead of swallowing it", async () => {
     server.use(
-      http.post("*/api/v1/transactions/:id/status", () =>
+      http.post("*/api/proxy/transactions/:id/status", () =>
         HttpResponse.json(
           { error: { code: "INVALID_TRANSITION", message: "Cannot move a COMPLETED transaction to FAILED" } },
           { status: 409 },
@@ -109,7 +109,7 @@ describe("TransactionDetail — history", () => {
 describe("TransactionDetail — editing", () => {
   it("invalidates the transaction list after a successful save", async () => {
     server.use(
-      http.patch("*/api/v1/transactions/:id", () =>
+      http.patch("*/api/proxy/transactions/:id", () =>
         HttpResponse.json({ transaction: detail({ description: "Revised" }) }),
       ),
     );
@@ -132,7 +132,7 @@ describe("TransactionDetail — editing", () => {
   it("allows editing the description while PENDING", async () => {
     let patched: unknown;
     server.use(
-      http.patch("*/api/v1/transactions/:id", async ({ request }) => {
+      http.patch("*/api/proxy/transactions/:id", async ({ request }) => {
         patched = await request.json();
         return HttpResponse.json({ transaction: detail({ description: "Revised" }) });
       }),

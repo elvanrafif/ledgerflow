@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 beforeEach(() => {
   push.mockReset();
   server.use(
-    http.get("*/api/v1/auth/me", () =>
+    http.get("*/api/proxy/auth/me", () =>
       HttpResponse.json({ error: { code: "UNAUTHENTICATED", message: "Authentication is required" } }, { status: 401 }),
     ),
   );
@@ -22,7 +22,7 @@ beforeEach(() => {
 describe("LoginPage", () => {
   it("redirects to /dashboard after successful login", async () => {
     server.use(
-      http.post("*/api/v1/auth/login", () =>
+      http.post("*/api/proxy/auth/login", () =>
         HttpResponse.json({ user: { id: "u1", name: "Ada", email: "ada@example.com" } }),
       ),
     );
@@ -37,7 +37,7 @@ describe("LoginPage", () => {
 
   it("shows an error when credentials are rejected", async () => {
     server.use(
-      http.post("*/api/v1/auth/login", () =>
+      http.post("*/api/proxy/auth/login", () =>
         HttpResponse.json(
           { error: { code: "INVALID_CREDENTIALS", message: "Email or password is incorrect" } },
           { status: 401 },
@@ -55,7 +55,7 @@ describe("LoginPage", () => {
 
   it("redirects an already-authenticated visitor away from /login", async () => {
     server.use(
-      http.get("*/api/v1/auth/me", () =>
+      http.get("*/api/proxy/auth/me", () =>
         HttpResponse.json({ user: { id: "u1", name: "Ada", email: "ada@example.com" } }),
       ),
     );
