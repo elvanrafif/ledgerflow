@@ -8,11 +8,11 @@ Last updated: 2026-10-15 (session 2)
 ## Next up
 
 **Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). Tasks 1-2 are done (scaffold + API client;
-tokens, fonts, and seven design primitives). Next: **Task 3 (authentication
-pages)** in `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`. `DESIGN.md`
-is the source of truth for every visual decision; the primitives live in
-`apps/web/src/components/`.
+"Frontend prerequisites" below). Tasks 1-3 are done (scaffold + API client;
+tokens, fonts, primitives; login/register pages). Next: **Task 4 (dashboard
+summary)** in `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`.
+`DESIGN.md` is the source of truth for every visual decision; primitives live in
+`apps/web/src/components/`, auth helpers in `apps/web/src/lib/`.
 
 ## Where we are
 
@@ -86,7 +86,7 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 
 - [x] Task 1 — web app foundation and API client (`apps/web`, `apiFetch`, `ApiError`)
 - [x] Task 2 — visual foundation (tokens, fonts, 7 primitives; precise amount formatting)
-- [ ] Task 3 — authentication pages
+- [x] Task 3 — authentication pages (`/login`, `/register`, session redirects, field errors)
 - [ ] Task 4 — dashboard summary
 - [ ] Task 5 — transaction list
 - [ ] Task 6 — create transaction

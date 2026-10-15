@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3000",
     "test": "bunx vitest run",
-    "typecheck": "bunx tsc --noEmit"
+    "typecheck": "bunx tsc --noEmit && bunx tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
     "next": "^15.0.0",
@@ -23,6 +23,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "jsdom": "^25.0.0",
+    "msw": "^3.0.3",
     "typescript": "^5.0.0",
     "vitest": "^5.0.0"
   }

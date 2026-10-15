@@ -213,7 +213,7 @@ git commit -m "feat(web): add design primitives including precise amount formatt
 - Produces: working `/login` and `/register` that establish the session cookie
   and redirect to `/dashboard`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 it("shows field-level validation errors returned by the API", async () => {
@@ -228,24 +228,24 @@ it("shows field-level validation errors returned by the API", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `RegisterPage` is not defined.
 
-- [ ] **Step 3: Implement both pages**
+- [x] **Step 3: Implement both pages**
 
 Client Components. Labels are real `<label>` elements tied to inputs (antislop
 R-32). Errors come from the API's `details` field. Successful auth redirects to
 `/dashboard`; an already-authenticated visitor is redirected away from these
 pages.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web
