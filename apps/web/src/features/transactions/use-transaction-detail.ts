@@ -1,36 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import { isConsequential, isEditable, permittedTransitions } from "@/lib/transitions";
+import { transactionKeys } from "./query-keys";
 import type { TransactionDetail as TransactionDetailData, TransactionStatus } from "@/lib/types";
 
 /**
- * Detail state machine. Owns the current transaction, the transition request
- * (including the confirmation gate for irreversible moves), and description
- * editing. Surfaces API errors (notably a 409 when the status changed in another
- * tab) instead of swallowing them.
+ * Detail state machine. TanStack Query owns the two write lifecycles
+ * (transition, description edit) as mutations; the rendered copy stays in local
+ * state because the status history is assembled client-side (the API returns the
+ * row without history on mutations). Surfaces API errors — notably a 409 when the
+ * status changed in another tab — instead of swallowing them.
  */
 export function useTransactionDetail(initial: TransactionDetailData) {
+  const queryClient = useQueryClient();
   const [current, setCurrent] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<TransactionStatus | null>(null);
-  const [busy, setBusy] = useState(false);
 
   const [description, setDescription] = useState(initial.description);
   const [editing, setEditing] = useState(false);
-  const [saveBusy, setSaveBusy] = useState(false);
 
   const moves = permittedTransitions(current.status);
 
-  async function applyTransition(next: TransactionStatus) {
-    setBusy(true);
-    setError(null);
-    try {
-      const response = await apiFetch<{ transaction: TransactionDetailData }>(
-        `/transactions/${current.id}/status`,
-        { method: "POST", body: JSON.stringify({ status: next }) },
-      );
+  const transition = useMutation({
+    mutationFn: (next: TransactionStatus) =>
+      apiFetch<{ transaction: TransactionDetailData }>(`/transactions/${current.id}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status: next }),
+      }),
+    onSuccess: (response, next) => {
       // The API returns the row without history; keep existing history and append.
       setCurrent((prev) => ({
         ...prev,
@@ -41,14 +42,32 @@ export function useTransactionDetail(initial: TransactionDetailData) {
         ],
       }));
       setPending(null);
-    } catch (caught) {
+      // The list may now show a different status for this row.
+      void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+    },
+    onError: (caught) => {
       // A 409 means the status changed elsewhere; surface it, do not swallow it.
       setError(caught instanceof ApiError ? caught.message : "Could not change the status");
       setPending(null);
-    } finally {
-      setBusy(false);
-    }
-  }
+    },
+    onMutate: () => setError(null),
+  });
+
+  const save = useMutation({
+    mutationFn: (nextDescription: string) =>
+      apiFetch<{ transaction: TransactionDetailData }>(`/transactions/${current.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ description: nextDescription.trim() }),
+      }),
+    onSuccess: (response) => {
+      setCurrent((prev) => ({ ...prev, ...response.transaction, history: prev.history }));
+      setEditing(false);
+    },
+    onError: (caught) => {
+      setError(caught instanceof ApiError ? caught.message : "Could not save the description");
+    },
+    onMutate: () => setError(null),
+  });
 
   /** Terminal moves ask for confirmation first; others apply immediately. */
   function requestTransition(next: TransactionStatus) {
@@ -57,25 +76,12 @@ export function useTransactionDetail(initial: TransactionDetailData) {
       setPending(next);
       return;
     }
-    void applyTransition(next);
+    transition.mutate(next);
   }
 
-  async function saveDescription(event: React.FormEvent) {
+  function saveDescription(event: React.FormEvent) {
     event.preventDefault();
-    setSaveBusy(true);
-    setError(null);
-    try {
-      const response = await apiFetch<{ transaction: TransactionDetailData }>(
-        `/transactions/${current.id}`,
-        { method: "PATCH", body: JSON.stringify({ description: description.trim() }) },
-      );
-      setCurrent((prev) => ({ ...prev, ...response.transaction, history: prev.history }));
-      setEditing(false);
-    } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "Could not save the description");
-    } finally {
-      setSaveBusy(false);
-    }
+    save.mutate(description);
   }
 
   function cancelEdit() {
@@ -89,14 +95,14 @@ export function useTransactionDetail(initial: TransactionDetailData) {
     moves,
     editable: isEditable(current.status),
     pending,
-    busy,
+    busy: transition.isPending,
     description,
     setDescription,
     editing,
     setEditing,
-    saveBusy,
+    saveBusy: save.isPending,
     requestTransition,
-    confirmTransition: () => pending && void applyTransition(pending),
+    confirmTransition: () => pending !== null && transition.mutate(pending),
     cancelTransition: () => setPending(null),
     saveDescription,
     cancelEdit,
