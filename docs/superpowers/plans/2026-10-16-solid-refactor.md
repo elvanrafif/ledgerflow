@@ -30,18 +30,37 @@ Level sedang: pisahkan tanggung jawab, jangan pecah per-fungsi.
 
 ## Frontend (`apps/web`) — SRP, hooks dipisah per page
 
-- [ ] **FE-1: `features/auth/use-auth-form.ts`** — logika form login/register;
+- [x] **FE-1: `features/auth/use-auth-form.ts`** — logika form login/register;
       pages jadi tipis.
-- [ ] **FE-2: `features/dashboard/use-dashboard-summary.ts`** (bila ada fetch klien) +
+- [x] **FE-2: `features/dashboard/use-dashboard-summary.ts`** (bila ada fetch klien) +
       pecah view jadi sub-komponen.
-- [ ] **FE-3: `features/transactions/use-transaction-list.ts`** — fetch + filter + pagination;
+- [x] **FE-3: `features/transactions/use-transaction-list.ts`** — fetch + filter + pagination;
       `TransactionList` pecah jadi sub-komponen (FilterBar/Tabel/Pagination).
-- [ ] **FE-4: `features/transactions/use-transaction-detail.ts`** — fetch + transisi + edit + 409;
+- [x] **FE-4: `features/transactions/use-transaction-detail.ts`** — fetch + transisi + edit + 409;
       `TransactionDetail` pecah jadi sub-komponen (Header/Actions/Description/History).
-- [ ] **FE-5: `features/transactions/use-create-transaction.ts`** — form + idempotency key.
-- [ ] **FE-6:** `bun run test` + `typecheck` + `next build` penuh; commit FE.
+- [x] **FE-5: `features/transactions/use-create-transaction.ts`** — form + idempotency key.
+- [x] **FE-6:** `bun run test` + `typecheck` + `next build` penuh; commit FE.
 
 ## Penutup
 
-- [ ] Update STATUS.md + PRD bila perlu.
-- [ ] Verifikasi live singkat (API + web nyala, dashboard & list render).
+- [x] Update STATUS.md + PRD bila perlu.
+- [x] Verifikasi live singkat (API + web nyala, dashboard & list render).
+
+## Hasil
+
+**Backend** — `auth.ts` (126 baris) → `auth/{sessions,guards,rate-limit}.ts` +
+`auth/{service,user-repository}.ts`; `http.ts` → `http/{validation,cors}.ts`;
+`transactions/` baru berisi `repository.ts`, `service.ts`, `amount.ts` (aturan
+idempotency, edit, dan lock status pindah dari route ke service). Route tinggal
+transport tipis dan **tidak ada lagi yang impor Prisma**.
+
+**Frontend** — `features/` baru: `auth/use-auth-form.ts`,
+`dashboard/{DashboardHeading,CurrencyTotalsCard,StatusBreakdown}`,
+`transactions/` berisi 5 hook + 9 komponen presentasional. Halaman jadi komposisi
+tipis; `transaction-list.tsx` 286 → ~45 baris, `transaction-detail.tsx`
+256 → ~45. Tak ada file > ~104 baris.
+
+**Verifikasi** — 81 test hijau (28 API + 53 web), typecheck bersih,
+`next build` 8 route, dan smoke test live (register → create → replay idempotent
+→ list/detail → transisi → dashboard) semua benar. Perilaku tak berubah.
+

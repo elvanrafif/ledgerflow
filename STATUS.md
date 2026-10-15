@@ -3,17 +3,22 @@
 Single source of truth for where the build stands. **Read this first** at the
 start of a session, before touching code.
 
-Last updated: 2026-10-15 (session 2)
+Last updated: 2026-10-16 (SOLID refactor session)
 
 ## Next up
 
-**Frontend Milestone 4 is complete.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). All 8 tasks are done: scaffold + API client,
-tokens/fonts/primitives, login/register, dashboard, transaction list, create,
-detail/edit/transitions, and the live click-through. The click-through found and
-fixed two real bugs (session-cookie path; a 500 leak on non-numeric amounts).
+**Milestones 1-4 are complete, and a moderate SOLID refactor of both apps is
+done.** The refactor split responsibilities without changing behavior: the API
+gained service + repository layers (routes are now thin transport and no longer
+import Prisma), and the web app gained per-page feature hooks plus focused
+presentational components (no file over ~104 lines; the list and detail pages
+were 286 and 256). All 81 tests pass, typecheck is clean, `next build` serves all
+8 routes, and a live smoke test confirmed the full flow (register → create →
+idempotent replay → list/detail → transition → dashboard).
+
 Remaining: a manual visual pass at mobile + desktop widths in a real browser, and
-Milestone 5 (release).
+Milestone 5 (release). See `docs/superpowers/plans/2026-10-16-solid-refactor.md`
+for the refactor checklist.
 
 ## Where we are
 
@@ -28,7 +33,7 @@ started.
 | 1 | Foundation: repo, TypeScript, PostgreSQL/Prisma, schema, seed, health, errors | Done |
 | 2 | Auth and transactions: register/sessions, create/list, authorization, tests | Done |
 | 3 | Business rules: transitions, idempotency, history/atomic updates, filtering, dashboard | Done |
-| 4 | Frontend: auth pages, dashboard/table, form/detail, API integration, UI states | **Not started** |
+| 4 | Frontend: auth pages, dashboard/table, form/detail, API integration, UI states | Done |
 | 5 | Release: security checks, tests, deployment, docs, demo | Not started |
 
 ## Requirements checklist
@@ -49,19 +54,19 @@ by tests; frontend rows are what Milestone 4 must deliver.
 - [x] FR-09 dashboard summary: counts per status, totals per currency, no mixing
 - [x] FR-10 errors: consistent shape, distinct validation/auth/authorization, no internals leaked
 
-### Frontend (Milestone 4, not started)
+### Frontend (Milestone 4, done, verified)
 
-- [ ] FR-01 `/register` page with validation errors from API
-- [ ] FR-02 `/login` page, session cookie auth, redirect when already logged in
-- [ ] FR-04 `/transactions` list: pagination, filters, search, sorting, empty/loading/error states
-- [ ] FR-03 `/transactions/new` create form: basic validation, idempotency key generated per submit
-- [ ] FR-05 `/transactions/[id]` detail with status history timeline
-- [ ] FR-06 edit description while PENDING
-- [ ] FR-07 transition controls (only permitted), confirmation for consequential actions
-- [ ] FR-09 `/dashboard` summary: counts by status, totals per currency
-- [ ] §8 shared: centralized API client, reusable components, status badges, loading indicators,
+- [x] FR-01 `/register` page with validation errors from API
+- [x] FR-02 `/login` page, session cookie auth, redirect when already logged in
+- [x] FR-04 `/transactions` list: pagination, filters, search, sorting, empty/loading/error states
+- [x] FR-03 `/transactions/new` create form: basic validation, idempotency key generated per submit
+- [x] FR-05 `/transactions/[id]` detail with status history timeline
+- [x] FR-06 edit description while PENDING
+- [x] FR-07 transition controls (only permitted), confirmation for consequential actions
+- [x] FR-09 `/dashboard` summary: counts by status, totals per currency
+- [x] §8 shared: centralized API client, reusable components, status badges, loading indicators,
       accessible labels, keyboard navigation, responsive desktop/mobile
-- [ ] §8 routed pages: `/login`, `/register`, `/dashboard`, `/transactions`,
+- [x] §8 routed pages: `/login`, `/register`, `/dashboard`, `/transactions`,
       `/transactions/new`, `/transactions/[id]`
 
 ### Release (Milestone 5, not started)
