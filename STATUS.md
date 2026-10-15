@@ -3,44 +3,40 @@
 Single source of truth for where the build stands. **Read this first** at the
 start of a session, before touching code.
 
-Last updated: 2026-10-16 (SOLID refactor + Milestone 5 groundwork + TanStack Query)
+Last updated: 2026-10-16 (deployed + split-origin session fix)
 
 ## Next up
 
-**Milestones 1-4 are complete, a moderate SOLID refactor of both apps is done,
-and Milestone 5 (release) groundwork is in place.** The refactor split
-responsibilities without changing behavior: the API gained service + repository
-layers (routes are now thin transport and no longer import Prisma), and the web
-app gained per-page feature hooks plus focused presentational components (no file
-over ~104 lines; the list and detail pages were 286 and 256).
+**Milestones 1-5 are complete: the app is deployed and working at
+[ledgerflow.elvanrff.id](https://ledgerflow.elvanrff.id) (synthetic data only).**
+Milestones 1-4 delivered the API and web app; a moderate SOLID refactor split
+responsibilities without changing behavior (API routes are thin transport over
+service + repository layers; the web app uses per-page feature hooks and focused
+presentational components).
 
-**Client data fetching now uses TanStack Query.** The transaction list reads
-through `useQuery` and the detail's transition/description writes run through
-`useMutation` (each write invalidates the list key, so an edit is reflected when
-you return to the list); the dashboard stays server-rendered via `serverFetch`.
-Behavior is otherwise unchanged — 82 tests pass (28 API + 54 web), typecheck
-clean, `next build` serves all 8 routes. (The API test command now loads
-`apps/api/.env` via a small `vitest.config.ts`, fixing `bun run test` without an
-exported environment.)
+**Client data fetching uses TanStack Query.** The transaction list reads through
+`useQuery` and the detail's transition/description writes run through
+`useMutation`; the dashboard stays server-rendered via `serverFetch`. The test
+suite is **89 tests (30 API + 59 web)**, typecheck clean, `next build` serves all
+routes.
 
-Release groundwork (no credentials needed): a security review (`docs/security-review.md`,
-advisories 5 → 1, both remaining being build/dev-only), an API reference
-(`docs/api.md`), a rewritten README, a deploy guide (`docs/deployment.md`), an API
-`Dockerfile` (verified by building and running the image against a real Postgres),
-`vercel.json`, and CI (`.github/workflows/ci.yml`).
+**Deployment lesson (split-origin sessions).** Web and API are on different
+origins (`ledgerflow.elvanrff.id` + `api-ledgerflow.elvanrff.id`). A cookie set by
+the API belongs to the API domain, so Server Components (which read `cookies()`)
+could not see the session and `/dashboard` returned 401. Fixed with a same-origin
+proxy (`apps/web/src/app/api/proxy/[...path]/route.ts`) that forwards to the API
+and rewrites `Set-Cookie` to drop `Domain`. See `docs/deployment.md` §5. A single
+origin would also avoid this and is the recommended setup when available.
 
-Remaining for release: **actually deploy** (platform accounts + live demo URL,
-synthetic data only), **screenshots + demo walkthrough**, and a manual visual pass
-at mobile + desktop widths in a real browser — all of which need a human with a
-browser/deploy account. See `docs/superpowers/plans/2026-10-16-milestone-5-release.md`.
+Remaining (non-blocking, needs a human with a browser): screenshots + a short demo
+walkthrough, and a manual visual pass at mobile + desktop widths.
 
 ## Where we are
 
-Milestones are from PRD §15. Backend (Milestones 1-3) is done and merged to
-`main`. Frontend (Milestone 4) is complete. A moderate SOLID refactor of both apps
-is done and verified (81 tests, typecheck, `next build`, live smoke test). Release
-(Milestone 5) is in progress: all code/docs/CI artifacts are ready; only the
-deployment itself, screenshots, and the manual visual pass remain (human actions).
+Milestones are from PRD §15, all five **Done** (Milestone 5's demo/screenshots are
+the only optional leftovers, needing a human with a browser). Backend, frontend,
+refactor, and deployment are complete and verified (89 tests, typecheck,
+`next build`, live deploy on a VPS via Docker Compose).
 
 | # | Milestone | Status |
 | --- | --- | --- |
@@ -48,12 +44,12 @@ deployment itself, screenshots, and the manual visual pass remain (human actions
 | 2 | Auth and transactions: register/sessions, create/list, authorization, tests | Done |
 | 3 | Business rules: transitions, idempotency, history/atomic updates, filtering, dashboard | Done |
 | 4 | Frontend: auth pages, dashboard/table, form/detail, API integration, UI states | Done |
-| 5 | Release: security checks, tests, deployment, docs, demo | In progress (deploy + demo pending) |
+| 5 | Release: security checks, tests, deployment, docs, demo | Done (deployed; demo/screenshots optional) |
 
 ## Requirements checklist
 
 Traced to PRD functional requirements. Backend rows are implemented and covered
-by tests; frontend rows are what Milestone 4 must deliver.
+by tests; frontend rows are delivered by Milestone 4.
 
 ### Backend (done, verified)
 
@@ -83,14 +79,15 @@ by tests; frontend rows are what Milestone 4 must deliver.
 - [x] §8 routed pages: `/login`, `/register`, `/dashboard`, `/transactions`,
       `/transactions/new`, `/transactions/[id]`
 
-### Release (Milestone 5, in progress — artifacts done, deployment pending)
+### Release (Milestone 5 — deployed)
 
 - [x] Security pass against PRD §11 (CORS, CSRF, rate limiting, secrets, logging) — `docs/security-review.md`
 - [x] README architecture/features/setup/limitations, API examples — README + `docs/api.md`
-- [x] Deploy assets prepared and verified — `apps/api/Dockerfile`, `vercel.json`, `docs/deployment.md`
+- [x] Deploy assets prepared and verified — `apps/api/Dockerfile`, `docker-compose.prod.yml`, `docs/deployment.md`
 - [x] CI — `.github/workflows/ci.yml` (typecheck + test + build with a Postgres service)
 - [x] Dependency advisory resolved (postcss; 5 → 1 advisory, remainder dev-only)
-- [ ] Deployment (documented, synthetic data only) and live demo URL — needs a deploy account
+- [x] Deployment (Docker Compose on a VPS, synthetic data only) — live at ledgerflow.elvanrff.id
+- [x] Split-origin session fix — same-origin API proxy (`docs/deployment.md` §5)
 - [ ] Screenshots and short demo walkthrough — needs a browser
 - [ ] Manual visual pass at mobile + desktop widths — needs a browser
 
@@ -154,7 +151,7 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 docker compose up -d                     # PostgreSQL
 bun run --cwd apps/api db:generate
 bun run --cwd apps/api db:migrate
-bun run test                             # expect 28 API + 2 web passing
+bun run test                             # expect 30 API + 59 web passing
 bun run typecheck
 bun run dev:api                          # http://localhost:4000/api/v1/health
 bun run dev:web                          # http://localhost:3000
@@ -170,18 +167,20 @@ bun run dev:web                          # http://localhost:3000
   - `src/http/` — shared body/query validation and CORS
   - `src/middleware/` — error handler
   - `prisma/` — schema, migrations, seed
-  - `test/` — 9 suites, 28 tests, all against real PostgreSQL
-- `apps/web/` — Next.js App Router frontend (Milestone 4)
+  - `test/` — 9 suites, 30 tests, all against real PostgreSQL
+- `apps/web/` — Next.js App Router frontend
   - `src/lib/api-client.ts` — centralized `apiFetch` + `ApiError`, credentials, 401 redirect
+  - `src/lib/proxy-cookie.ts` — strips `Domain` from `Set-Cookie` for the proxy
   - `src/lib/query-client.tsx` — TanStack Query provider (root layout)
   - `src/features/` — per-domain hooks (list via `useQuery`, detail writes via `useMutation`) + components
   - `src/test/render.tsx` — `renderWithProviders` helper (wraps components in a QueryClient)
-  - `src/components/` — design primitives (Task 2 onward)
+  - `src/components/` — design primitives
   - `src/app/` — routed pages (thin composition)
+  - `src/app/api/proxy/` — same-origin proxy to the API (split-origin deploys)
 - `DESIGN.md` — design direction (palette, typography, dials); source of truth for UI
 - `docs/superpowers/plans/` — implementation plans
 - `docs/api.md`, `docs/security-review.md`, `docs/deployment.md` — release docs
-- `apps/api/Dockerfile`, `vercel.json`, `.github/workflows/ci.yml` — deploy + CI
+- `apps/api/Dockerfile`, `docker-compose.prod.yml`, `.github/workflows/ci.yml` — deploy + CI
 - `docker-compose.yml` — local PostgreSQL
 
 ## Git
@@ -190,4 +189,5 @@ bun run dev:web                          # http://localhost:3000
 - Remote: https://github.com/elvanrafif/ledgerflow (public).
 - History is staged in small commits: repo init → Milestones 1-4 → SOLID refactor
   (API service/repository layers, web feature hooks) → Milestone 5 artifacts
-  (security review, API docs, deploy assets, CI).
+  (security review, API docs, deploy assets, CI) → deployment + split-origin
+  session fixes.

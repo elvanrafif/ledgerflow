@@ -2,9 +2,11 @@
 
 A learning project for managing **simulated** transactions. It does not process payments or move money.
 
-The product requirements are in [PRD.md](./PRD.md). The backend API, the web
-frontend, and Milestones 1–4 are implemented and tested; a moderate SOLID refactor
-of both apps is done. Release (Milestone 5) is in progress.
+The product requirements are in [PRD.md](./PRD.md). Milestones 1–5 are complete:
+the API, the web frontend, and a moderate SOLID refactor of both are done and
+tested, and the app is deployed (synthetic data only).
+
+**Live demo:** [ledgerflow.elvanrff.id](https://ledgerflow.elvanrff.id)
 
 **Where the build stands is in [STATUS.md](./STATUS.md)** — read that first, it is the single source of truth for what is done and what comes next.
 
@@ -33,10 +35,11 @@ ledgerflow/
 ├─ apps/web/            Next.js app (App Router, feature folders)
 │  └─ src/
 │     ├─ app/           routed pages — thin composition
+│     │  └─ api/proxy/  same-origin proxy to the API (split-origin deploys)
 │     ├─ features/      per-domain hooks + presentational components
 │     ├─ components/    shared UI primitives (Button, Field, Amount, …)
 │     └─ lib/           API client, types, filters, transitions
-└─ docs/                plans, API reference, security review
+└─ docs/                plans, API reference, security review, deployment
 ```
 
 - **API** — routes never touch Prisma; business rules live in services, data
@@ -48,11 +51,17 @@ ledgerflow/
   for the detail's transition and description writes); the **dashboard stays
   server-rendered** via `serverFetch`. Money is rendered from the API's string
   amounts.
+- **Same-origin proxy** — in the deployed split-origin setup (web and API on
+  different domains), browser calls go through `app/api/proxy/[...path]`, which
+  forwards to the API and rewrites `Set-Cookie` to drop the `Domain` attribute.
+  That keeps the session cookie on the web origin so Server Components can read
+  it. See [docs/deployment.md](./docs/deployment.md).
 
 ## Features
 
 - **Accounts** — register/login/logout with PostgreSQL-backed sessions
-  (`HttpOnly`, `SameSite=Lax`, `Secure` in production), bcrypt password hashing.
+  (`HttpOnly`, `Secure` in production, `SameSite=Lax` by default), bcrypt
+  password hashing.
 - **Transactions** — create (with `Idempotency-Key`), owner-scoped list with
   pagination/filter/search/sort, detail with status history, description edit
   while `PENDING`.
@@ -114,10 +123,10 @@ consistent error shape with no internals leaked in production.
 ## Limitations
 
 - **Simulated only** — no real payments, transfers, or money movement.
-- **Single-origin CSRF model** — multi-origin frontends would need a token scheme.
+- **Single-origin CSRF model** — the API requires `Origin` to equal
+  `FRONTEND_ORIGIN`; multiple origins would need a token scheme.
 - **In-memory rate limiting** — per-process; a shared store (e.g. Redis) is needed
   to scale to multiple API instances.
-- **No live demo yet** — deployment (Milestone 5) is pending.
 
 ## Status
 
@@ -126,4 +135,4 @@ consistent error shape with no internals leaked in production.
 - [x] Authentication (register/login/logout) and transaction workflows
 - [x] Frontend (auth, dashboard, list, create, detail/edit/transitions)
 - [x] SOLID refactor of API + web (behavior-preserving)
-- [ ] Deployment
+- [x] Deployment (Docker Compose on a VPS, synthetic data only)

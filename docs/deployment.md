@@ -16,8 +16,8 @@ Repositori ini monorepo (Bun workspaces): API di `apps/api`, web di `apps/web`.
 | --- | --- | --- | --- |
 | `DATABASE_URL` | ya | `postgresql://user:pass@host:5432/db` | Disediakan platform DB |
 | `SESSION_SECRET` | ya | string acak ≥32 karakter | **Jangan** dari repo; generate acak |
-| `FRONTEND_ORIGIN` | ya | `https://app-kamu.vercel.app` | Origin web; dipakai untuk CORS + CSRF |
-| `COOKIE_CROSS_SITE` | tidak | `true` | Set `true` **hanya** bila web dan API beda origin (mis. `app.example.com` + `api.example.com`); membuat cookie `SameSite=None; Secure`. Biarkan kosong/`false` untuk same-origin. |
+| `FRONTEND_ORIGIN` | ya | `https://app-kamu.example.com` | Origin web; dipakai untuk CORS + CSRF |
+| `COOKIE_CROSS_SITE` | tidak | `true` | Set `true` **hanya** bila API diakses langsung lintas-origin oleh browser **tanpa** proxy (jarang). Dengan proxy same-origin (§5), biarkan `false`. |
 | `PORT` | tidak | `4000` | Default 4000 |
 | `NODE_ENV` | ya | `production` | Mengaktifkan cookie `Secure` + pesan 500 generik |
 | `SEED_USER_PASSWORD` | tidak | — | Hanya bila menjalankan seed demo |
@@ -31,7 +31,7 @@ openssl rand -base64 48
 
 | Variabel | Wajib | Contoh produksi |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | ya | `https://api-kamu.fly.dev/api/v1` |
+| `NEXT_PUBLIC_API_URL` | ya | `https://api-kamu.example.com/api/v1` |
 
 > `NEXT_PUBLIC_*` di-*inline* saat build, jadi harus diisi **sebelum** build web.
 
@@ -47,8 +47,10 @@ dan `SameSite=Lax` sudah cukup.
 > **Hindari web dan API di origin berbeda** (mis. `app.example.com` +
 > `api.example.com`). Pada mode split-origin, cookie di-set milik domain API,
 > sedangkan Server Components membaca cookie domain web, sehingga fetch
-> server-side (mis. `/dashboard`) tidak membawa sesi dan gagal 401. Lihat catatan
-> `COOKIE_CROSS_SITE` di bawah bila kamu tetap memilih split-origin.
+> server-side (mis. `/dashboard`) tidak membawa sesi dan gagal 401. Aplikasi web
+> menyertakan **proxy same-origin** (`/api/proxy/[...path]`) yang menyalin
+> `Set-Cookie` ke domain web untuk mengatasi ini, tapi satu origin tetap lebih
+> sederhana. Lihat §5 untuk detail proxy.
 
 ---
 
@@ -84,7 +86,54 @@ Seed demo **tidak** dijalankan otomatis.
 - Output: `apps/web/.next`
 - Env: `NEXT_PUBLIC_API_URL` → URL API produksi.
 
-## 4. Migrasi & seed
+## 4. Opsi C — Docker Compose di VPS (mis. Coolify)
+
+Repo menyertakan `docker-compose.prod.yml` dengan tiga service: `postgres`,
+`api`, dan `web`. Env yang dibutuhkan:
+
+- **api:** `POSTGRES_PASSWORD`, `SESSION_SECRET`, `FRONTEND_ORIGIN`
+- **web:** `NEXT_PUBLIC_API_URL` (di-inline saat build), `INTERNAL_API_URL`
+  (di-set di compose ke `http://api:4000/api/v1`)
+
+Catatan Coolify v4 (Docker Compose resource):
+
+- **Jangan tulis port di domain.** Isi domain tanpa port
+  (`https://app.example.com`), taruh port container (`3000`/`4000`) di field
+  *Ports Exposes*.
+- **Path prefix dilepas.** Domain api dengan path (mis.
+  `https://app.example.com/api/v1`) akan di-*strip-prefix* ke container, sehingga
+  request berakhir 404. Karena itu **api harus di origin tersendiri**
+  (`https://api.example.com`) dan web memakai **proxy same-origin** (§5).
+- Env diisi di level **resource** (satu tempat), lalu diteruskan ke setiap
+  service lewat compose.
+
+## 5. Split-origin (dual domain) + proxy same-origin
+
+Bila web dan API di origin berbeda (`app.example.com` + `api.example.com`),
+cookie sesi yang di-set API menjadi milik domain API dan **tidak terbaca** oleh
+Server Components web (`cookies()`), sehingga `/dashboard` gagal 401.
+
+Aplikasi web mengatasinya dengan **route handler catch-all** di
+`apps/web/src/app/api/proxy/[...path]/route.ts`:
+
+- Semua panggilan API dari browser (`apiFetch`) menuju `/api/proxy/...` pada
+  origin web (same-origin), lalu diteruskan ke API.
+- `Set-Cookie` dari API **ditulis ulang** untuk membuang atribut `Domain`,
+  sehingga cookie tersimpan pada domain web dan bisa dibaca Server Components.
+- `serverFetch` (Server Components) memakai `INTERNAL_API_URL` untuk memanggil
+  API lewat jaringan internal.
+
+Konfigurasi yang dibutuhkan:
+
+| Service | Env | Nilai |
+| --- | --- | --- |
+| web | `NEXT_PUBLIC_API_URL` | `https://api.example.com/api/v1` |
+| api | `FRONTEND_ORIGIN` | `https://app.example.com` |
+
+`COOKIE_CROSS_SITE` **tidak** diperlukan pada mode ini (browser selalu
+same-origin ke web).
+
+## 6. Migrasi & seed
 
 Sebelum (atau saat) rilis, terapkan migrasi ke DB produksi:
 
@@ -103,18 +152,21 @@ memakai `migrate dev` dan **hanya** untuk lokal.
 
 ---
 
-## 5. Checklist pra-rilis
+## 7. Checklist pra-rilis
 
 - [ ] `NODE_ENV=production` di API (cookie `Secure` + error generik aktif).
 - [ ] `SESSION_SECRET` acak ≥32 karakter, disimpan di secret manager platform.
 - [ ] `FRONTEND_ORIGIN` = origin web produksi (harus persis, termasuk https).
 - [ ] `NEXT_PUBLIC_API_URL` = URL API produksi, diisi sebelum build web.
+- [ ] Bila split-origin: api di domain tersendiri (tanpa path) + `FRONTEND_ORIGIN`
+      = origin web; proxy `/api/proxy` aktif (cek login mengembalikan `Set-Cookie`
+      tanpa `Domain`).
 - [ ] DB produksi hanya berisi **data sintetis**.
 - [ ] Smoke test pasca-deploy: register → login → create → list → transisi →
       dashboard (lihat `docs/api.md` untuk alur curl).
 - [ ] Konfirmasi CORS: request dari origin web berhasil, dari origin lain 403.
 
-## 6. Catatan skala
+## 8. Catatan skala
 
 - **Rate limit in-memory** hanya per-proses. Untuk banyak instance API, ganti
   store ke Redis (lihat `docs/security-review.md` §4).
