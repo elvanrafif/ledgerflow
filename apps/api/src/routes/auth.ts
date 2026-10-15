@@ -1,21 +1,13 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { AppError } from "../errors.js";
 import { parseBody } from "../http/validation.js";
 import { requireFrontendOrigin } from "../http/cors.js";
-import {
-  cookieOptions,
-  createSession,
-  destroySession,
-  resolveSession,
-  sessionCookie,
-} from "../auth/sessions.js";
+import { cookieOptions, destroySession, resolveSession, sessionCookie } from "../auth/sessions.js";
 import { type AuthContext } from "../auth/guards.js";
 import { rateLimit } from "../auth/rate-limit.js";
-
-const publicUser = { id: true, name: true, email: true, createdAt: true } as const;
+import { AuthService } from "../auth/service.js";
+import { UserRepository } from "../auth/user-repository.js";
+import { AppError } from "../errors.js";
 
 const registration = z.object({
   name: z.string().trim().min(1).max(100),
@@ -31,26 +23,15 @@ export type { AuthContext as AuthOptions };
 
 export function authRouter(context: AuthContext) {
   const router = Router();
+  const service = new AuthService(new UserRepository(context.prisma), context);
   const limit = rateLimit();
 
   router.post("/register", limit, async (req, res, next) => {
     try {
       requireFrontendOrigin(req, context.frontendOrigin);
       const input = parseBody(registration, req.body);
-      try {
-        const user = await context.prisma.user.create({ data: {
-          name: input.name,
-          email: input.email,
-          passwordHash: await bcrypt.hash(input.password, 12),
-        }, select: publicUser });
-        await createSession(context, user.id, res);
-        res.status(201).json({ user });
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-          throw new AppError(409, "EMAIL_ALREADY_EXISTS", "An account with this email already exists");
-        }
-        throw error;
-      }
+      const user = await service.register(input, res);
+      res.status(201).json({ user });
     } catch (error) { next(error); }
   });
 
@@ -58,21 +39,15 @@ export function authRouter(context: AuthContext) {
     try {
       requireFrontendOrigin(req, context.frontendOrigin);
       const input = parseBody(credentials, req.body);
-      const user = await context.prisma.user.findUnique({ where: { email: input.email } });
-      if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-        throw new AppError(401, "INVALID_CREDENTIALS", "Email or password is incorrect");
-      }
-      await createSession(context, user.id, res);
-      res.json({ user: { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt } });
+      res.json({ user: await service.login(input, res) });
     } catch (error) { next(error); }
   });
 
   router.get("/me", async (req, res, next) => {
     try {
-      const user = await resolveSession(context, req);
-      if (!user) throw new AppError(401, "UNAUTHENTICATED", "Authentication is required");
-      const profile = await context.prisma.user.findUnique({ where: { id: user.id }, select: publicUser });
-      res.json({ user: profile });
+      const session = await resolveSession(context, req);
+      if (!session) throw new AppError(401, "UNAUTHENTICATED", "Authentication is required");
+      res.json({ user: await service.profile(session.id) });
     } catch (error) { next(error); }
   });
 
