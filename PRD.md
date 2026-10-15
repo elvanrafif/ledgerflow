@@ -1,7 +1,7 @@
 # LedgerFlow — Product Requirements Document (PRD)
 
 **Version:** 1.0  
-**Status:** MVP Specification  
+**Status:** MVP implemented. Milestones 1–4 done (backend, auth/transactions, business rules, frontend), verified against a live stack. Milestone 5 (release) in progress.  
 **Product Type:** Full-stack Web Application  
 **Primary Goal:** Demonstrate practical full-stack engineering skills through a working transaction management application.
 
@@ -113,11 +113,11 @@ Git repository with frontend/backend; PostgreSQL schema/migrations; synthetic se
 
 ## 15. Implementation Milestones
 
-1. **Foundation:** initialize repository/apps; configure TypeScript/lint; PostgreSQL/Prisma; schema/migrations/seed; health check/error handling.
-2. **Authentication and Transactions:** registration/sessions; create/list; authorization/validation; initial unit/integration tests.
-3. **Business Rules:** transitions; idempotency; history/atomic updates; filtering/pagination/dashboard.
-4. **Frontend:** auth pages; dashboard/table; form/detail; API integration/UI states.
-5. **Release:** security checks; tests; deployment; setup/API docs; publish demo/portfolio materials.
+1. **Foundation:** initialize repository/apps; configure TypeScript/lint; PostgreSQL/Prisma; schema/migrations/seed; health check/error handling. — **Done.**
+2. **Authentication and Transactions:** registration/sessions; create/list; authorization/validation; initial unit/integration tests. — **Done.**
+3. **Business Rules:** transitions; idempotency; history/atomic updates; filtering/pagination/dashboard. — **Done.**
+4. **Frontend:** auth pages; dashboard/table; form/detail; API integration/UI states. — **Done.** All six PRD §8 pages built, wired, and verified against a live stack. Found two backend bugs fixed (session cookie path; non-numeric amount returning 500).
+5. **Release:** security checks; tests; deployment; setup/API docs; publish demo/portfolio materials. — **In progress.**
 
 ## 16. Definition of Done
 

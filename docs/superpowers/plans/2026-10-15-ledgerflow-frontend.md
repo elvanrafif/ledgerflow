@@ -17,7 +17,7 @@ React Testing Library.
 
 **Spec:** `PRD.md` (§8 pages, §12 frontend testing, §13 non-functional).
 
-**Status:** Not started. Blocked on the two prerequisites below.
+**Status:** Complete. All 8 tasks done and verified against a live stack (Task 8).
 
 ## Global Constraints
 
@@ -83,12 +83,12 @@ the task that owns the code.
   message: string; details?: unknown }` on non-2xx. `ApiError` is exported for
   callers and tests.
 
-- [ ] **Step 1: Scaffold the workspace app**
+- [x] **Step 1: Scaffold the workspace app**
 
 Add `apps/web` to the Bun workspace (root `package.json` already globs `apps/*`).
 Set the `dev:web` root script to `bun run --cwd apps/web dev`.
 
-- [ ] **Step 2: Write the failing test for the API client**
+- [x] **Step 2: Write the failing test for the API client**
 
 ```ts
 it("sends credentials and surfaces the API error shape", async () => {
@@ -120,12 +120,12 @@ it("attaches the idempotency key only when given one", async () => {
 });
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `apiFetch` is not defined.
 
-- [ ] **Step 4: Implement the API client**
+- [x] **Step 4: Implement the API client**
 
 Wrap `fetch` with `credentials: "include"`, base URL from
 `NEXT_PUBLIC_API_URL` defaulting to `http://localhost:4000/api/v1`, JSON content
@@ -133,12 +133,12 @@ type on bodied requests, and `Idempotency-Key` only when the caller passes it.
 On non-2xx, parse the `{ error: { code, message, details } }` envelope into
 `ApiError`. Redirect to `/login` on 401 from any path except the auth endpoints.
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web
