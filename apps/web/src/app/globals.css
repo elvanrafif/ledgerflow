@@ -282,3 +282,15 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/*
+ * Touch targets (antislop R-03: at least 44px). On coarse pointers — fingers —
+ * grow the interactive controls to the 44px minimum. On a precise pointer (mouse)
+ * the denser 36px control stays, because 44px there just wastes vertical space.
+ */
+@media (pointer: coarse) {
+  .button,
+  .field__input {
+    min-height: 44px;
+  }
+}
