@@ -8,6 +8,7 @@
     "typecheck": "bunx tsc --noEmit",
     "db:generate": "bunx prisma generate",
     "db:migrate": "bunx prisma migrate dev",
+    "db:deploy": "bunx prisma migrate deploy",
     "db:seed": "bun prisma/seed.ts"
   },
   "dependencies": {
