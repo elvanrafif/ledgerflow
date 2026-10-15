@@ -11,7 +11,11 @@ import { DEFAULT_API_BASE_URL, ApiError } from "./api-client";
  */
 
 function serverBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_API_BASE_URL).replace(/\/+$/, "");
+  return (
+    process.env.INTERNAL_API_URL?.trim() ||
+    process.env.NEXT_PUBLIC_API_URL?.trim() ||
+    DEFAULT_API_BASE_URL
+  ).replace(/\/+$/, "");
 }
 
 export async function serverFetch<T>(path: string): Promise<T> {
