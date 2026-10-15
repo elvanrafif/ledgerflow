@@ -16,10 +16,12 @@ over ~104 lines; the list and detail pages were 286 and 256).
 
 **Client data fetching now uses TanStack Query.** The transaction list reads
 through `useQuery` and the detail's transition/description writes run through
-`useMutation`; the dashboard stays server-rendered via `serverFetch`. Behavior is
-unchanged — 81 tests still pass, typecheck clean, `next build` serves all 8
-routes. (The API test command now loads `apps/api/.env` via a small
-`vitest.config.ts`, fixing `bun run test` without an exported environment.)
+`useMutation` (each write invalidates the list key, so an edit is reflected when
+you return to the list); the dashboard stays server-rendered via `serverFetch`.
+Behavior is otherwise unchanged — 82 tests pass (28 API + 54 web), typecheck
+clean, `next build` serves all 8 routes. (The API test command now loads
+`apps/api/.env` via a small `vitest.config.ts`, fixing `bun run test` without an
+exported environment.)
 
 Release groundwork (no credentials needed): a security review (`docs/security-review.md`,
 advisories 5 → 1, both remaining being build/dev-only), an API reference
@@ -173,6 +175,7 @@ bun run dev:web                          # http://localhost:3000
   - `src/lib/api-client.ts` — centralized `apiFetch` + `ApiError`, credentials, 401 redirect
   - `src/lib/query-client.tsx` — TanStack Query provider (root layout)
   - `src/features/` — per-domain hooks (list via `useQuery`, detail writes via `useMutation`) + components
+  - `src/test/render.tsx` — `renderWithProviders` helper (wraps components in a QueryClient)
   - `src/components/` — design primitives (Task 2 onward)
   - `src/app/` — routed pages (thin composition)
 - `DESIGN.md` — design direction (palette, typography, dials); source of truth for UI
