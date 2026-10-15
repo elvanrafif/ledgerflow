@@ -9,7 +9,7 @@ export async function seedUser(prisma: Pick<PrismaClient, "user">, password: str
   const passwordHash = await bcrypt.hash(password, 12);
   return prisma.user.upsert({
     where: { email },
-    update: {},
+    update: { passwordHash },
     create: { name: "LedgerFlow Sample", email, passwordHash },
   });
 }

@@ -7,9 +7,12 @@ describe("seedUser", () => {
     const users = new Map<string, { email: string; name: string; passwordHash: string }>();
     const prisma = {
       user: {
-        upsert: vi.fn(async ({ where, create }) => {
+        upsert: vi.fn(async ({ where, create, update }) => {
           const existing = users.get(where.email);
-          if (existing) return existing;
+          if (existing) {
+            if (update?.passwordHash) existing.passwordHash = update.passwordHash;
+            return existing;
+          }
           users.set(where.email, create);
           return create;
         }),

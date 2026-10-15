@@ -6,11 +6,13 @@ export function AuthShell({
   subtitle,
   children,
   footer,
+  headerAction,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
+  headerAction?: ReactNode;
 }) {
   return (
     <main
@@ -47,7 +49,10 @@ export function AuthShell({
           >
             LedgerFlow
           </span>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 650, letterSpacing: "-0.01em" }}>{title}</h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 650, letterSpacing: "-0.01em" }}>{title}</h1>
+            {headerAction}
+          </div>
           {subtitle ? <p style={{ margin: 0, color: "var(--text-secondary)" }}>{subtitle}</p> : null}
         </header>
         {children}

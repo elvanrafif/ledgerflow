@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { ErrorState } from "@/components/ErrorState";
+import { DemoCredentialsPopover } from "@/components/DemoCredentialsPopover";
 import { login, type FieldErrors } from "@/lib/auth";
 import { useAuthForm } from "@/features/auth/use-auth-form";
 import { useRedirectIfAuthenticated } from "@/lib/use-redirect-if-authenticated";
@@ -29,10 +29,13 @@ export default function LoginPage() {
   return (
     <AuthShell
       title="Sign in"
-      footer={
-        <>
-          New to LedgerFlow? <Link href="/register">Create an account</Link>
-        </>
+      headerAction={
+        <DemoCredentialsPopover
+          onFill={(email, password) => {
+            form.update("email", email);
+            form.update("password", password);
+          }}
+        />
       }
     >
       <form onSubmit={form.onSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>

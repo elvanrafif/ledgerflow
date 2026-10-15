@@ -63,4 +63,25 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     await vi.waitFor(() => expect(push).toHaveBeenCalledWith("/dashboard"));
   });
+
+  it("does not render a create account link", () => {
+    render(<LoginPage />);
+    expect(screen.queryByRole("link", { name: /create an account/i })).toBeNull();
+  });
+
+  it("displays demo credentials in popover on hover and can auto-fill form", async () => {
+    render(<LoginPage />);
+    const infoButton = screen.getByRole("button", { name: /demo login information/i });
+    expect(infoButton).toBeInTheDocument();
+
+    await userEvent.hover(infoButton);
+    expect(screen.getByText("ledgerflow.sample@example.test")).toBeInTheDocument();
+    expect(screen.getByText("iniakundemo")).toBeInTheDocument();
+
+    const fillButton = screen.getByRole("button", { name: /auto-fill to form/i });
+    await userEvent.click(fillButton);
+
+    expect(screen.getByLabelText(/email/i)).toHaveValue("ledgerflow.sample@example.test");
+    expect(screen.getByLabelText(/password/i)).toHaveValue("iniakundemo");
+  });
 });
