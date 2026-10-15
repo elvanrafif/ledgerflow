@@ -1,81 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { apiFetch, ApiError } from "@/lib/api-client";
 import { Button } from "@/components/Button";
 import { Field, SelectField } from "@/components/Field";
 import { ErrorState } from "@/components/ErrorState";
-import { keyForPayload, type CreatePayload } from "@/lib/idempotency";
-import type { Transaction } from "@/lib/types";
+import { useCreateTransaction } from "@/features/transactions/use-create-transaction";
 
-interface FormErrors {
-  description?: string;
-  amount?: string;
-  currency?: string;
-}
-
-/**
- * Client-side validation is for feedback only; the API is the authority. The
- * amount is kept as a string and sent as a string, never parsed to a float.
- */
-function validate(payload: CreatePayload): FormErrors {
-  const errors: FormErrors = {};
-  if (!payload.description.trim()) errors.description = "Description is required";
-  else if (payload.description.trim().length > 500) errors.description = "Description must be 500 characters or fewer";
-
-  if (!payload.amount.trim()) {
-    errors.amount = "Amount is required";
-  } else if (!/^\d+(\.\d{1,2})?$/.test(payload.amount.trim())) {
-    errors.amount = "Use digits with at most two decimal places";
-  } else if (Number(payload.amount) <= 0 || /^0+(\.0+)?$/.test(payload.amount.trim())) {
-    // Number() is safe here: we only compare for validity, never format from it.
-    errors.amount = "Amount must be greater than zero";
-  }
-
-  if (!payload.currency) errors.currency = "Currency is required";
-  return errors;
-}
-
+/** Create-transaction page: a thin shell over the create-form hook. */
 export default function NewTransactionPage() {
-  const router = useRouter();
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("IDR");
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  // Remembers the key for the last payload so a retry reuses it.
-  const keyRef = useRef<{ signature: string; key: string } | null>(null);
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setFormError(null);
-
-    const payload: CreatePayload = { description: description.trim(), amount: amount.trim(), currency };
-    const localErrors = validate(payload);
-    setErrors(localErrors);
-    if (Object.keys(localErrors).length > 0) return;
-
-    // Same payload -> same key (replay-safe retry); changed payload -> new key.
-    const next = keyForPayload(keyRef.current, payload);
-    keyRef.current = next;
-
-    setSubmitting(true);
-    try {
-      const created = await apiFetch<{ transaction: Transaction }>("/transactions", {
-        method: "POST",
-        body: JSON.stringify(payload),
-        idempotencyKey: next.key,
-      });
-      router.push(`/transactions/${created.transaction.id}`);
-    } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : "Could not create the transaction");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const form = useCreateTransaction();
 
   return (
     <div style={{ maxWidth: 520 }}>
@@ -86,15 +19,15 @@ export default function NewTransactionPage() {
         </p>
       </header>
 
-      <form onSubmit={onSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-        {formError ? <ErrorState message={formError} /> : null}
+      <form onSubmit={form.submit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+        {form.formError ? <ErrorState message={form.formError} /> : null}
 
         <Field
           label="Description"
           name="description"
-          value={description}
-          error={errors.description}
-          onChange={(event) => setDescription(event.target.value)}
+          value={form.values.description}
+          error={form.errors.description}
+          onChange={(event) => form.setDescription(event.target.value)}
         />
 
         <Field
@@ -102,17 +35,17 @@ export default function NewTransactionPage() {
           name="amount"
           inputMode="decimal"
           hint="Digits with up to two decimal places, e.g. 1500000.00"
-          value={amount}
-          error={errors.amount}
-          onChange={(event) => setAmount(event.target.value)}
+          value={form.values.amount}
+          error={form.errors.amount}
+          onChange={(event) => form.setAmount(event.target.value)}
         />
 
         <SelectField
           label="Currency"
           name="currency"
-          value={currency}
-          error={errors.currency}
-          onChange={(event) => setCurrency(event.target.value)}
+          value={form.values.currency}
+          error={form.errors.currency}
+          onChange={(event) => form.setCurrency(event.target.value)}
         >
           <option value="IDR">IDR</option>
           <option value="USD">USD</option>
@@ -120,7 +53,7 @@ export default function NewTransactionPage() {
         </SelectField>
 
         <div style={{ display: "flex", gap: "var(--space-3)" }}>
-          <Button type="submit" variant="primary" loading={submitting}>
+          <Button type="submit" variant="primary" loading={form.submitting}>
             Create transaction
           </Button>
           <Link href="/transactions">

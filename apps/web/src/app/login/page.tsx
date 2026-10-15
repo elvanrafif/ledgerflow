@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { ErrorState } from "@/components/ErrorState";
-import { ApiError } from "@/lib/api-client";
-import { fieldErrors, login, type FieldErrors } from "@/lib/auth";
+import { login, type FieldErrors } from "@/lib/auth";
+import { useAuthForm } from "@/features/auth/use-auth-form";
 import { useRedirectIfAuthenticated } from "@/lib/use-redirect-if-authenticated";
 
 function validate(values: { email: string; password: string }): FieldErrors {
@@ -19,40 +17,14 @@ function validate(values: { email: string; password: string }): FieldErrors {
 }
 
 export default function LoginPage() {
-  const router = useRouter();
   useRedirectIfAuthenticated();
-  const [values, setValues] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  function update(field: keyof typeof values, value: string) {
-    setValues((current) => ({ ...current, [field]: value }));
-  }
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setFormError(null);
-
-    const localErrors = validate(values);
-    setErrors(localErrors);
-    if (Object.keys(localErrors).length > 0) return;
-
-    setSubmitting(true);
-    try {
-      await login({ email: values.email.trim(), password: values.password });
-      router.push("/dashboard");
-    } catch (error) {
-      const details = fieldErrors(error);
-      if (details) {
-        setErrors(details);
-      } else {
-        setFormError(error instanceof ApiError ? error.message : "Could not sign you in");
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const form = useAuthForm({
+    initial: { email: "", password: "" },
+    validate,
+    submit: (values) => login({ email: values.email.trim(), password: values.password }),
+    onSuccess: () => "/dashboard",
+    fallbackError: "Could not sign you in",
+  });
 
   return (
     <AuthShell
@@ -63,27 +35,27 @@ export default function LoginPage() {
         </>
       }
     >
-      <form onSubmit={onSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-        {formError ? <ErrorState message={formError} /> : null}
+      <form onSubmit={form.onSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+        {form.formError ? <ErrorState message={form.formError} /> : null}
         <Field
           label="Email"
           name="email"
           type="email"
           autoComplete="email"
-          value={values.email}
-          error={errors.email}
-          onChange={(event) => update("email", event.target.value)}
+          value={form.values.email}
+          error={form.errors.email}
+          onChange={(event) => form.update("email", event.target.value)}
         />
         <Field
           label="Password"
           name="password"
           type="password"
           autoComplete="current-password"
-          value={values.password}
-          error={errors.password}
-          onChange={(event) => update("password", event.target.value)}
+          value={form.values.password}
+          error={form.errors.password}
+          onChange={(event) => form.update("password", event.target.value)}
         />
-        <Button type="submit" variant="primary" loading={submitting}>
+        <Button type="submit" variant="primary" loading={form.submitting}>
           Sign in
         </Button>
       </form>

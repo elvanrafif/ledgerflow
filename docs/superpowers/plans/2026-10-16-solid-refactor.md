@@ -16,17 +16,17 @@ Level sedang: pisahkan tanggung jawab, jangan pecah per-fungsi.
 
 ## Backend (`apps/api`) — SRP + DIP
 
-- [ ] **BE-1: pecah `auth.ts`** → `auth/sessions.ts` (token/cookie/session),
+- [x] **BE-1: pecah `auth.ts`** → `auth/sessions.ts` (token/cookie/session),
       `auth/guards.ts` (requireAuth/currentUser/protectState/requireOrigin),
       `auth/rate-limit.ts`. Re-export via `auth/index.ts` supaya import lama tetap jalan.
-- [ ] **BE-2: pecah `http.ts`** → `http/validation.ts` + `http/cors.ts`. Re-export `http/index.ts`.
-- [ ] **BE-3: buat `transactions/repository.ts`** (akses Prisma) dan
+- [x] **BE-2: pecah `http.ts`** → `http/validation.ts` + `http/cors.ts`. Re-export `http/index.ts`.
+- [x] **BE-3: buat `transactions/repository.ts`** (akses Prisma) dan
       `transactions/service.ts` (aturan bisnis: idempotency, list, edit, changeStatus + lock).
-- [ ] **BE-4: rampingkan `routes/transactions.ts` + `routes/transaction-detail.ts`**
+- [x] **BE-4: rampingkan `routes/transactions.ts` + `routes/transaction-detail.ts`**
       jadi tipis (parse → service → response).
-- [ ] **BE-5: `dashboard`** → `dashboard/service.ts` + repository; route tipis.
-- [ ] **BE-6: `auth` route** → `auth/service.ts` (register/login/logout) + repository (user/session).
-- [ ] **BE-7:** `bun run test` + `typecheck` penuh; commit BE.
+- [x] **BE-5: `dashboard`** → `dashboard/service.ts` + repository; route tipis.
+- [x] **BE-6: `auth` route** → `auth/service.ts` (register/login/logout) + repository (user/session).
+- [x] **BE-7:** `bun run test` + `typecheck` penuh; commit BE.
 
 ## Frontend (`apps/web`) — SRP, hooks dipisah per page
 
