@@ -25,9 +25,18 @@ const listQuery = z.object({
 });
 
 function toAmount(value: string | number): Prisma.Decimal {
-  const amount = new Prisma.Decimal(value);
+  const message = "Amount must be a positive number with at most two decimal places";
+  // Prisma.Decimal throws on non-numeric input (e.g. "abc"). We must catch that
+  // here so a malformed amount becomes the intended 400 VALIDATION_ERROR rather
+  // than escaping as a 500 with a raw Decimal library message.
+  let amount: Prisma.Decimal;
+  try {
+    amount = new Prisma.Decimal(value);
+  } catch {
+    throw new AppError(400, "VALIDATION_ERROR", message, { amount: [message] });
+  }
   if (!amount.isFinite() || amount.lte(0) || !amount.equals(amount.toDecimalPlaces(2))) {
-    throw new AppError(400, "VALIDATION_ERROR", "Amount must be a positive number with at most two decimal places", { amount: ["Amount must be a positive number with at most two decimal places"] });
+    throw new AppError(400, "VALIDATION_ERROR", message, { amount: [message] });
   }
   return amount;
 }

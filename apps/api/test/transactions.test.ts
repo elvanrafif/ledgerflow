@@ -72,6 +72,11 @@ describe("transactions", () => {
     expect((await create({ description: "Zero", amount: "0", currency: "IDR" }, cookie)).status).toBe(400);
     expect((await create({ description: "Negative", amount: "-5", currency: "IDR" }, cookie)).status).toBe(400);
     expect((await create({ description: "Float", amount: "10.999", currency: "USD" }, cookie)).status).toBe(400);
+    // Non-numeric input must be a 400, not a 500 leaking a Decimal library error.
+    const nonNumeric = await create({ description: "Text", amount: "abc", currency: "USD" }, cookie);
+    expect(nonNumeric.status).toBe(400);
+    expect(nonNumeric.body.error.code).toBe("VALIDATION_ERROR");
+    expect(nonNumeric.body.error.message).not.toMatch(/Decimal/);
     const currency = await create({ description: "Bad currency", amount: "10", currency: "EUR" }, cookie);
     expect(currency.status).toBe(400);
     expect(currency.body.error.code).toBe("VALIDATION_ERROR");
