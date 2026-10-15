@@ -1,6 +1,5 @@
 import type { ErrorRequestHandler } from "express";
 import { AppError } from "../errors.js";
-
 export function errorHandler(nodeEnv = process.env.NODE_ENV): ErrorRequestHandler {
   return (error, _req, res, next) => {
     if (res.headersSent) return next(error);

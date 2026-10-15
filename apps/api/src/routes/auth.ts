@@ -3,17 +3,17 @@ import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { AppError } from "../errors.js";
-import { parseBody, requireFrontendOrigin } from "../http.js";
+import { parseBody } from "../http/validation.js";
+import { requireFrontendOrigin } from "../http/cors.js";
 import {
-  type AuthContext,
   cookieOptions,
   createSession,
-  rateLimit,
+  destroySession,
   resolveSession,
   sessionCookie,
-  sessionId,
-  cookieToken,
-} from "../auth.js";
+} from "../auth/sessions.js";
+import { type AuthContext } from "../auth/guards.js";
+import { rateLimit } from "../auth/rate-limit.js";
 
 const publicUser = { id: true, name: true, email: true, createdAt: true } as const;
 
@@ -79,8 +79,7 @@ export function authRouter(context: AuthContext) {
   router.post("/logout", async (req, res, next) => {
     try {
       requireFrontendOrigin(req, context.frontendOrigin);
-      const token = cookieToken(req);
-      if (token) await context.prisma.session.deleteMany({ where: { id: sessionId(token, context.sessionSecret) } });
+      await destroySession(context, req);
       res.clearCookie(sessionCookie, cookieOptions(context));
       res.json({ status: "ok" });
     } catch (error) { next(error); }

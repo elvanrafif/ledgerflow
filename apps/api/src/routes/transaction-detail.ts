@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
-import { type AuthContext, currentUser, protectState, rateLimit, requireAuth } from "../auth.js";
+import { type AuthContext, currentUser, protectState, requireAuth } from "../auth/guards.js";
+import { rateLimit } from "../auth/rate-limit.js";
 import { AppError } from "../errors.js";
-import { parseBody } from "../http.js";
+import { parseBody } from "../http/validation.js";
 import { isEditable, isPermittedTransition, type TransactionStatus } from "../transactions/status.js";
 import { type TransactionHistoryRow, toHistoryView, toView } from "../transactions/view.js";
 import { Router } from "express";

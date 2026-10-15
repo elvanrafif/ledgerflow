@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Prisma, type PrismaClient } from "@prisma/client";
-import { type AuthContext, currentUser, requireAuth } from "../auth.js";
+import { type AuthContext, currentUser, requireAuth } from "../auth/guards.js";
 
 const statuses = ["PENDING", "PROCESSING", "COMPLETED", "FAILED"] as const;
 

@@ -1,10 +1,10 @@
 import express from "express";
 import { AppError } from "./errors.js";
-import { setCorsHeaders } from "./http.js";
+import { setCorsHeaders } from "./http/cors.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter, type AuthOptions } from "./routes/auth.js";
-import { requireOrigin } from "./auth.js";
+import { requireOrigin } from "./auth/guards.js";
 import { transactionsRouter } from "./routes/transactions.js";
 import { transactionDetailRouter } from "./routes/transaction-detail.js";
 import { dashboardRouter } from "./routes/dashboard.js";

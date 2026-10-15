@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { type AuthContext, currentUser, protectState, rateLimit, requireAuth } from "../auth.js";
+import { type AuthContext, currentUser, protectState, requireAuth } from "../auth/guards.js";
+import { rateLimit } from "../auth/rate-limit.js";
 import { AppError } from "../errors.js";
-import { parseBody, parseQuery } from "../http.js";
+import { parseBody, parseQuery } from "../http/validation.js";
 import { generateReference } from "../transactions/reference.js";
 import { toHistoryView, toView, type TransactionRow } from "../transactions/view.js";
 
