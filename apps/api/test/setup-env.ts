@@ -5,6 +5,8 @@
  */
 try {
   process.loadEnvFile(new URL("../.env", import.meta.url).pathname);
-} catch {
-  // No .env file (e.g. CI): rely on variables already in the environment.
+} catch (error) {
+  // A missing .env is expected (e.g. CI supplies the variables itself). Anything
+  // else — a malformed or unreadable file — is a real problem worth surfacing.
+  if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
 }

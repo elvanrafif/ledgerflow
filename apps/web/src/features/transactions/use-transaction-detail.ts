@@ -62,6 +62,8 @@ export function useTransactionDetail(initial: TransactionDetailData) {
     onSuccess: (response) => {
       setCurrent((prev) => ({ ...prev, ...response.transaction, history: prev.history }));
       setEditing(false);
+      // The list caches descriptions too; refresh it so the edited text shows.
+      void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
     },
     onError: (caught) => {
       setError(caught instanceof ApiError ? caught.message : "Could not save the description");

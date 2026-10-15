@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderWithProviders as render, screen, within } from "@/test/render";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
+import { QueryClient } from "@tanstack/react-query";
 import { server } from "@/test/server";
 import type { TransactionDetail as TransactionDetailData } from "@/lib/types";
 
@@ -106,6 +107,28 @@ describe("TransactionDetail — history", () => {
 });
 
 describe("TransactionDetail — editing", () => {
+  it("invalidates the transaction list after a successful save", async () => {
+    server.use(
+      http.patch("*/api/v1/transactions/:id", () =>
+        HttpResponse.json({ transaction: detail({ description: "Revised" }) }),
+      ),
+    );
+
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+
+    render(<TransactionDetail transaction={detail({ status: "PENDING" })} />, { client });
+    await userEvent.click(screen.getByRole("button", { name: /edit description/i }));
+    const input = await screen.findByRole("textbox", { name: /^description$/i });
+    await userEvent.clear(input);
+    await userEvent.type(input, "Revised");
+    await userEvent.click(screen.getByRole("button", { name: /save description/i }));
+
+    await vi.waitFor(() =>
+      expect(invalidate).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["transactions"] })),
+    );
+  });
+
   it("allows editing the description while PENDING", async () => {
     let patched: unknown;
     server.use(
