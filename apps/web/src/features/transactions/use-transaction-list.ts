@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import { buildQuery, type ListFilters } from "@/lib/list-filters";
+import { transactionKeys } from "./query-keys";
 import type { TransactionListResponse } from "@/lib/types";
 
 /** The list's view state as a small state machine (no half-loaded screens). */
@@ -12,34 +13,26 @@ export type ListState =
   | { kind: "ready"; data: TransactionListResponse };
 
 /**
- * Fetch the transaction page described by `filters`. Owns the request lifecycle
- * (loading → ready/error) and re-fetches whenever the filters change. The list
- * UI renders whatever state this returns and never talks to the API itself.
+ * Fetch the transaction page described by `filters`. TanStack Query owns the
+ * request lifecycle and cache; this hook maps its state onto the same
+ * `loading | error | ready` shape the list UI already renders, so no
+ * presentational component changes.
  */
 export function useTransactionList(filters: ListFilters): { state: ListState; reload: () => void } {
-  const [state, setState] = useState<ListState>({ kind: "loading" });
   const query = buildQuery(filters);
+  const result = useQuery({
+    queryKey: transactionKeys.list(query),
+    queryFn: () => apiFetch<TransactionListResponse>(`/transactions?${query}`),
+  });
 
-  const load = useCallback(() => {
-    let active = true;
-    setState({ kind: "loading" });
-    apiFetch<TransactionListResponse>(`/transactions?${query}`)
-      .then((data) => {
-        if (active) setState({ kind: "ready", data });
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        setState({
+  const state: ListState = result.isPending
+    ? { kind: "loading" }
+    : result.isError
+      ? {
           kind: "error",
-          message: error instanceof ApiError ? error.message : "Could not load transactions",
-        });
-      });
-    return () => {
-      active = false;
-    };
-  }, [query]);
+          message: result.error instanceof ApiError ? result.error.message : "Could not load transactions",
+        }
+      : { kind: "ready", data: result.data };
 
-  useEffect(() => load(), [load]);
-
-  return { state, reload: load };
+  return { state, reload: () => void result.refetch() };
 }
