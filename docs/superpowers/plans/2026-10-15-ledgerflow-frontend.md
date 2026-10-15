@@ -163,7 +163,7 @@ git commit -m "feat(web): scaffold Next.js app with a centralized API client"
 **Note:** this task cannot start until `DESIGN.md` exists. Every visual decision
 must trace to it (antislop R-31).
 
-- [ ] **Step 1: Write the failing test for `Amount`**
+- [x] **Step 1: Write the failing test for `Amount`**
 
 ```tsx
 it("formats a string amount without parsing it into a float", () => {
@@ -177,23 +177,23 @@ it("never adds two different currencies together", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `Amount` is not defined.
 
-- [ ] **Step 3: Implement the primitives**
+- [x] **Step 3: Implement the primitives**
 
 Format amounts from the string, splitting integer and fraction parts before
 localization so precision is never lost. Every primitive has a visible focus
 state and keyboard support (antislop R-32).
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web

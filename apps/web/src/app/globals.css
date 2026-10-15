@@ -1,0 +1,284 @@
+/*
+ * LedgerFlow design tokens.
+ * Source of truth: DESIGN.md (confident fintech; neutral grays + one deep slate
+ * blue accent; humanist sans + tabular-figures mono; ENERGY 3 / RHYTHM 2 / MOTION 2).
+ *
+ * Token hierarchy: primitive -> semantic. Components read semantic tokens only.
+ */
+
+:root {
+  /* --- Primitive: neutral grays (cool, to sit under the slate-blue accent) --- */
+  --gray-0: #ffffff;
+  --gray-25: #fcfcfd;
+  --gray-50: #f7f8fa;
+  --gray-100: #eceef2;
+  --gray-200: #d9dde4;
+  --gray-300: #c1c7d0;
+  --gray-400: #99a1ad;
+  --gray-500: #6b7480;
+  --gray-600: #4d5560;
+  --gray-700: #363c45;
+  --gray-800: #22262c;
+  --gray-900: #14171b;
+  --gray-950: #0b0d10;
+
+  /* --- Primitive: the one accent, a deep slate blue (used sparingly) --- */
+  --accent-100: #e3e9f4;
+  --accent-300: #9db1d6;
+  --accent-500: #3d5a94;
+  --accent-600: #33497a;
+  --accent-700: #293b63;
+
+  /* --- Primitive: status colors (functional, distinct, readable as text) --- */
+  --status-pending-fg: #7a5a12;
+  --status-pending-bg: #fbf1d6;
+  --status-pending-border: #e8d089;
+  --status-processing-fg: #24506e;
+  --status-processing-bg: #e0eef8;
+  --status-processing-border: #a9cde6;
+  --status-completed-fg: #1f5236;
+  --status-completed-bg: #dbf0e2;
+  --status-completed-border: #9dd3b2;
+  --status-failed-fg: #7a2a2a;
+  --status-failed-bg: #f8e0e0;
+  --status-failed-border: #e0a9a9;
+
+  /* --- Semantic: surfaces and text --- */
+  --surface-default: var(--gray-0);
+  --surface-subtle: var(--gray-50);
+  --surface-sunken: var(--gray-100);
+  --surface-inverse: var(--gray-900);
+  --border-default: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  --text-inverse: var(--gray-0);
+  --interactive-primary: var(--accent-500);
+  --interactive-primary-hover: var(--accent-600);
+  --interactive-primary-active: var(--accent-700);
+  --focus-ring: var(--accent-500);
+
+  /* --- Radii: one scale (all-soft). Buttons, inputs, badges share it. --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* --- Spacing --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* --- Motion (MOTION 2: considered transitions, reduced-motion respected) --- */
+  --transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- Type --- */
+  --font-sans: var(--font-ui-sans, system-ui, sans-serif);
+  --font-mono: var(--font-ui-mono, ui-monospace, monospace);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus state for every interactive element (antislop R-32). */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Amount: tabular figures in a mono so columns of money align. --- */
+.amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+/* --- Status badge: readable as text, not color alone. --- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+.status-badge[data-status="PENDING"] {
+  color: var(--status-pending-fg);
+  background: var(--status-pending-bg);
+  border-color: var(--status-pending-border);
+}
+.status-badge[data-status="PROCESSING"] {
+  color: var(--status-processing-fg);
+  background: var(--status-processing-bg);
+  border-color: var(--status-processing-border);
+}
+.status-badge[data-status="COMPLETED"] {
+  color: var(--status-completed-fg);
+  background: var(--status-completed-bg);
+  border-color: var(--status-completed-border);
+}
+.status-badge[data-status="FAILED"] {
+  color: var(--status-failed-fg);
+  background: var(--status-failed-bg);
+  border-color: var(--status-failed-border);
+}
+
+/* --- Button --- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.button[data-variant="primary"] {
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+.button[data-variant="primary"]:hover:not(:disabled) {
+  background: var(--interactive-primary-hover);
+}
+.button[data-variant="primary"]:active:not(:disabled) {
+  background: var(--interactive-primary-active);
+}
+.button[data-variant="secondary"] {
+  background: var(--surface-default);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.button[data-variant="secondary"]:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+.button[data-variant="ghost"] {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.button[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+.button[data-variant="danger"] {
+  background: var(--status-failed-fg);
+  color: var(--text-inverse);
+}
+.button[data-variant="danger"]:hover:not(:disabled) {
+  background: #631f1f;
+}
+
+/* --- Field --- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.field__input {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+}
+.field__input:disabled {
+  background: var(--surface-sunken);
+  cursor: not-allowed;
+}
+.field__input[aria-invalid="true"] {
+  border-color: var(--status-failed-border);
+}
+.field__error {
+  font-size: 13px;
+  color: var(--status-failed-fg);
+}
+
+/* --- State blocks (empty / loading / error) --- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-default);
+}
+.state--error {
+  border-style: solid;
+  border-color: var(--status-failed-border);
+  background: var(--status-failed-bg);
+}
+.state__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.state__body {
+  max-width: 46ch;
+  color: var(--text-secondary);
+}
+
+/* --- Loading spinner (CSS only, honors reduced motion) --- */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--interactive-primary);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

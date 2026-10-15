@@ -8,11 +8,11 @@ Last updated: 2026-10-15 (session 2)
 ## Next up
 
 **Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). Task 1 (web scaffold + API client) is done.
-Next: **Task 2 (visual foundation)** in
-`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md` — design primitives
-including precise string-based amount formatting. `DESIGN.md` now exists at the
-repo root and is the source of truth for every visual decision.
+"Frontend prerequisites" below). Tasks 1-2 are done (scaffold + API client;
+tokens, fonts, and seven design primitives). Next: **Task 3 (authentication
+pages)** in `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`. `DESIGN.md`
+is the source of truth for every visual decision; the primitives live in
+`apps/web/src/components/`.
 
 ## Where we are
 
@@ -85,7 +85,7 @@ Both were resolved in session 2 before any UI work.
 From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 
 - [x] Task 1 — web app foundation and API client (`apps/web`, `apiFetch`, `ApiError`)
-- [ ] Task 2 — visual foundation (design primitives; precise amount formatting)
+- [x] Task 2 — visual foundation (tokens, fonts, 7 primitives; precise amount formatting)
 - [ ] Task 3 — authentication pages
 - [ ] Task 4 — dashboard summary
 - [ ] Task 5 — transaction list
