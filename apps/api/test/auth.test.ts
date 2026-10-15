@@ -39,7 +39,11 @@ describe("authentication", () => {
     const setCookie = registered.headers["set-cookie"][0] as string;
     expect(setCookie).toContain("HttpOnly");
     expect(setCookie).toContain("SameSite=Lax");
-    expect(setCookie).toContain("Path=/api/v1");
+    // Scoped to the whole origin, not just /api/v1: the Next.js frontend reads
+    // this cookie in Server Components, and a /api/v1-scoped cookie is invisible
+    // to app routes (e.g. /dashboard), which broke server-side session forwarding.
+    expect(setCookie).toContain("Path=/");
+    expect(setCookie).not.toContain("Path=/api/v1");
     expect(setCookie).not.toContain("Secure");
     expect(await prisma.session.count()).toBeGreaterThan(0);
     const cookie = setCookie.split(";")[0];

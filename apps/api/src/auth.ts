@@ -6,9 +6,12 @@ import { requireFrontendOrigin } from "./http.js";
 
 export const sessionCookie = "ledgerflow.sid";
 const sessionLifetime = 7 * 24 * 60 * 60 * 1000;
-// One cookie path covers every authenticated route, so session cookies travel
-// with both auth and transaction requests.
-export const cookiePath = "/api/v1";
+// The session cookie is scoped to the whole origin ("/"), not just /api/v1.
+// The Next.js frontend reads this cookie in Server Components via next/headers,
+// and a cookie scoped to /api/v1 is invisible to app routes like /dashboard, so
+// those server-side fetches could never forward the session. HttpOnly + SameSite
+// + Secure (in production) provide the safety; the path does not.
+export const cookiePath = "/";
 
 export type RequestUser = { id: string; name: string; email: string };
 
