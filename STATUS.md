@@ -3,13 +3,16 @@
 Single source of truth for where the build stands. **Read this first** at the
 start of a session, before touching code.
 
-Last updated: 2026-10-15
+Last updated: 2026-10-15 (session 2)
 
 ## Next up
 
-**Start a new session with this:** frontend Milestone 4 (PRD §8) is not started.
-Before writing any UI, clear two gates in the "Frontend prerequisites" section
-below, then build the pages in the order listed.
+**Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
+"Frontend prerequisites" below). Task 1 (web scaffold + API client) is done.
+Next: **Task 2 (visual foundation)** in
+`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md` — design primitives
+including precise string-based amount formatting. `DESIGN.md` now exists at the
+repo root and is the source of truth for every visual decision.
 
 ## Where we are
 
@@ -65,19 +68,30 @@ by tests; frontend rows are what Milestone 4 must deliver.
 - [ ] Screenshots and short demo walkthrough
 - [ ] Resolve remaining dependency advisory (see "Known issues")
 
-## Frontend prerequisites (blocking, PRD §8)
+## Frontend prerequisites (cleared)
 
-Both must be settled before writing UI. See
-`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md` for the full plan.
+Both were resolved in session 2 before any UI work.
 
-1. **antislop usage mode** — installed globally at `~/.agents/skills/antislop`
-   (v3.2.20, MIT). No saved preference exists, so `antislop` (R-37) requires a
-   choice: `during` (apply rules while building) or `after` (audit afterwards).
-   To stop being asked every session, the user runs `npx antislop-ai --mode during`.
-2. **Design direction** — antislop is a filter, not a beautifier (R-37). Without a
-   `DESIGN.md` the output must be labelled *"draft without direction"* with dials
-   ENERGY 1 / RHYTHM 1 / MOTION 1, and is not shippable. A `DESIGN.md` must exist
-   at the repo root before building.
+1. **antislop usage mode** — resolved to `during` as a session override (user
+   choice). Announce `antislop active: during (session override)` before UI edits.
+   To make it permanent across sessions, run `npx antislop-ai --mode during`.
+2. **Design direction** — `DESIGN.md` now exists at the repo root, authored by the
+   user via a direction questionnaire and transcribed by the agent: confident
+   fintech identity, neutral grays with a deep slate blue accent, humanist sans +
+   tabular-figures mono for numbers, dials **ENERGY 3 / RHYTHM 2 / MOTION 2**.
+
+## Milestone 4 task progress
+
+From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
+
+- [x] Task 1 — web app foundation and API client (`apps/web`, `apiFetch`, `ApiError`)
+- [ ] Task 2 — visual foundation (design primitives; precise amount formatting)
+- [ ] Task 3 — authentication pages
+- [ ] Task 4 — dashboard summary
+- [ ] Task 5 — transaction list
+- [ ] Task 6 — create transaction
+- [ ] Task 7 — transaction detail, edit, transitions
+- [ ] Task 8 — run the app and verify every control
 
 ## Known issues / follow-ups
 
@@ -89,8 +103,9 @@ Both must be settled before writing UI. See
   for a single same-origin app; multiple origins need a token-based scheme.
 - **One dependency advisory remains**: `deepmerge-ts <8.0.0` (high) pulled in by
   Prisma 6 tooling. The fix requires a Prisma major upgrade; deferred deliberately.
-- **Frontend `dev:web` script points at `apps/web`, which does not exist yet.**
-  Running `bun run dev:web` today fails until Milestone 4 creates the app.
+- **Frontend `dev:web` script now works**: `apps/web` exists (created in
+  Milestone 4, Task 1). `bun run dev:web` starts Next.js on port 3000; the API
+  defaults to port 4000 and `FRONTEND_ORIGIN` defaults to `http://localhost:3000`.
 
 ## Environment notes
 
@@ -109,9 +124,10 @@ Both must be settled before writing UI. See
 docker compose up -d                     # PostgreSQL
 bun run --cwd apps/api db:generate
 bun run --cwd apps/api db:migrate
-bun run test                             # expect 28 passing
+bun run test                             # expect 28 API + 2 web passing
 bun run typecheck
 bun run dev:api                          # http://localhost:4000/api/v1/health
+bun run dev:web                          # http://localhost:3000
 ```
 
 ## Repo map
@@ -124,7 +140,11 @@ bun run dev:api                          # http://localhost:4000/api/v1/health
   - `src/transactions/` — reference generator, status state machine, view mappers
   - `prisma/` — schema, migrations, seed
   - `test/` — 9 suites, 28 tests, all against real PostgreSQL
-- `apps/web/` — Next.js frontend (to be created in Milestone 4)
+- `apps/web/` — Next.js App Router frontend (Milestone 4)
+  - `src/lib/api-client.ts` — centralized `apiFetch` + `ApiError`, credentials, 401 redirect
+  - `src/components/` — design primitives (Task 2 onward)
+  - `src/app/` — routed pages (Tasks 3-7)
+- `DESIGN.md` — design direction (palette, typography, dials); source of truth for UI
 - `docs/superpowers/plans/` — implementation plans
 - `docker-compose.yml` — local PostgreSQL
 
