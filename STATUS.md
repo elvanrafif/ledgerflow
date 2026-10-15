@@ -3,30 +3,35 @@
 Single source of truth for where the build stands. **Read this first** at the
 start of a session, before touching code.
 
-Last updated: 2026-10-16 (SOLID refactor session)
+Last updated: 2026-10-16 (SOLID refactor + Milestone 5 groundwork)
 
 ## Next up
 
-**Milestones 1-4 are complete, and a moderate SOLID refactor of both apps is
-done.** The refactor split responsibilities without changing behavior: the API
-gained service + repository layers (routes are now thin transport and no longer
-import Prisma), and the web app gained per-page feature hooks plus focused
-presentational components (no file over ~104 lines; the list and detail pages
-were 286 and 256). All 81 tests pass, typecheck is clean, `next build` serves all
-8 routes, and a live smoke test confirmed the full flow (register → create →
-idempotent replay → list/detail → transition → dashboard).
+**Milestones 1-4 are complete, a moderate SOLID refactor of both apps is done,
+and Milestone 5 (release) groundwork is in place.** The refactor split
+responsibilities without changing behavior: the API gained service + repository
+layers (routes are now thin transport and no longer import Prisma), and the web
+app gained per-page feature hooks plus focused presentational components (no file
+over ~104 lines; the list and detail pages were 286 and 256).
 
-Remaining: a manual visual pass at mobile + desktop widths in a real browser, and
-Milestone 5 (release). See `docs/superpowers/plans/2026-10-16-solid-refactor.md`
-for the refactor checklist.
+Release groundwork (no credentials needed): a security review (`docs/security-review.md`,
+advisories 5 → 1, both remaining being build/dev-only), an API reference
+(`docs/api.md`), a rewritten README, a deploy guide (`docs/deployment.md`), an API
+`Dockerfile` (verified by building and running the image against a real Postgres),
+`vercel.json`, and CI (`.github/workflows/ci.yml`).
+
+Remaining for release: **actually deploy** (platform accounts + live demo URL,
+synthetic data only), **screenshots + demo walkthrough**, and a manual visual pass
+at mobile + desktop widths in a real browser — all of which need a human with a
+browser/deploy account. See `docs/superpowers/plans/2026-10-16-milestone-5-release.md`.
 
 ## Where we are
 
 Milestones are from PRD §15. Backend (Milestones 1-3) is done and merged to
-`main`. Frontend (Milestone 4) is complete: all 8 tasks done, and the live
-click-through (Task 8) found and fixed two backend bugs. A manual visual pass at
-mobile + desktop widths is still recommended. Release (Milestone 5) has not
-started.
+`main`. Frontend (Milestone 4) is complete. A moderate SOLID refactor of both apps
+is done and verified (81 tests, typecheck, `next build`, live smoke test). Release
+(Milestone 5) is in progress: all code/docs/CI artifacts are ready; only the
+deployment itself, screenshots, and the manual visual pass remain (human actions).
 
 | # | Milestone | Status |
 | --- | --- | --- |
@@ -34,7 +39,7 @@ started.
 | 2 | Auth and transactions: register/sessions, create/list, authorization, tests | Done |
 | 3 | Business rules: transitions, idempotency, history/atomic updates, filtering, dashboard | Done |
 | 4 | Frontend: auth pages, dashboard/table, form/detail, API integration, UI states | Done |
-| 5 | Release: security checks, tests, deployment, docs, demo | Not started |
+| 5 | Release: security checks, tests, deployment, docs, demo | In progress (deploy + demo pending) |
 
 ## Requirements checklist
 
@@ -69,13 +74,16 @@ by tests; frontend rows are what Milestone 4 must deliver.
 - [x] §8 routed pages: `/login`, `/register`, `/dashboard`, `/transactions`,
       `/transactions/new`, `/transactions/[id]`
 
-### Release (Milestone 5, not started)
+### Release (Milestone 5, in progress — artifacts done, deployment pending)
 
-- [ ] Security pass against PRD §11 (CORS, CSRF, rate limiting, secrets, logging)
-- [ ] Deployment (documented, synthetic data only) and live demo URL
-- [ ] README architecture/features/setup/limitations, API examples
-- [ ] Screenshots and short demo walkthrough
-- [ ] Resolve remaining dependency advisory (see "Known issues")
+- [x] Security pass against PRD §11 (CORS, CSRF, rate limiting, secrets, logging) — `docs/security-review.md`
+- [x] README architecture/features/setup/limitations, API examples — README + `docs/api.md`
+- [x] Deploy assets prepared and verified — `apps/api/Dockerfile`, `vercel.json`, `docs/deployment.md`
+- [x] CI — `.github/workflows/ci.yml` (typecheck + test + build with a Postgres service)
+- [x] Dependency advisory resolved (postcss; 5 → 1 advisory, remainder dev-only)
+- [ ] Deployment (documented, synthetic data only) and live demo URL — needs a deploy account
+- [ ] Screenshots and short demo walkthrough — needs a browser
+- [ ] Manual visual pass at mobile + desktop widths — needs a browser
 
 ## Frontend prerequisites (cleared)
 
@@ -105,14 +113,17 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 
 ## Known issues / follow-ups
 
-- **Rate limiting is process-local** (`apps/api/src/auth.ts`, marked with a
-  `// shorthand` comment). Does not coordinate across API instances; needs a
-  shared store before running more than one instance.
-- **CSRF model assumes one frontend origin** (`apps/api/src/http.ts`,
-  `// shorthand` comment). Requiring `Origin` to equal `FRONTEND_ORIGIN` is enough
+- **Rate limiting is process-local** (`apps/api/src/auth/rate-limit.ts`, marked
+  with a `shorthand` comment). Does not coordinate across API instances; needs a
+  shared store (e.g. Redis) before running more than one instance.
+- **CSRF model assumes one frontend origin** (`apps/api/src/http/cors.ts`,
+  `shorthand` comment). Requiring `Origin` to equal `FRONTEND_ORIGIN` is enough
   for a single same-origin app; multiple origins need a token-based scheme.
-- **One dependency advisory remains**: `deepmerge-ts <8.0.0` (high) pulled in by
-  Prisma 6 tooling. The fix requires a Prisma major upgrade; deferred deliberately.
+- **One dependency advisory remains (dev-only)**: `deepmerge-ts <8.0.0` (high)
+  pulled in by the `prisma` CLI devDependency (not in the runtime path; the
+  postcss advisories are fixed via a root `overrides` entry). See
+  `docs/security-review.md` §3. The deepmerge-ts fix needs a Prisma major upgrade;
+  deferred deliberately.
 - **Frontend `dev:web` script now works**: `apps/web` exists (created in
   Milestone 4, Task 1). `bun run dev:web` starts Next.js on port 3000; the API
   defaults to port 4000 and `FRONTEND_ORIGIN` defaults to `http://localhost:3000`.
@@ -144,22 +155,28 @@ bun run dev:web                          # http://localhost:3000
 
 - `PRD.md` — product requirements (source of truth)
 - `apps/api/` — Express + TypeScript API
-  - `src/routes/` — health, auth, transactions, transaction-detail, dashboard
-  - `src/auth.ts` — sessions, cookie config, Origin guard, rate limiting
-  - `src/http.ts` — shared body/query validation and CORS
-  - `src/transactions/` — reference generator, status state machine, view mappers
+  - `src/routes/` — thin transport: health, auth, transactions, transaction-detail, dashboard
+  - `src/auth/` — sessions, cookie config, Origin guard, rate limiting, account service
+  - `src/transactions/` — service (rules), repository (Prisma), amount/status/reference/view
+  - `src/http/` — shared body/query validation and CORS
+  - `src/middleware/` — error handler
   - `prisma/` — schema, migrations, seed
   - `test/` — 9 suites, 28 tests, all against real PostgreSQL
 - `apps/web/` — Next.js App Router frontend (Milestone 4)
   - `src/lib/api-client.ts` — centralized `apiFetch` + `ApiError`, credentials, 401 redirect
   - `src/components/` — design primitives (Task 2 onward)
-  - `src/app/` — routed pages (Tasks 3-7)
+  - `src/app/` — routed pages (thin composition)
+  - `src/features/` — per-domain hooks + presentational components
 - `DESIGN.md` — design direction (palette, typography, dials); source of truth for UI
 - `docs/superpowers/plans/` — implementation plans
+- `docs/api.md`, `docs/security-review.md`, `docs/deployment.md` — release docs
+- `apps/api/Dockerfile`, `vercel.json`, `.github/workflows/ci.yml` — deploy + CI
 - `docker-compose.yml` — local PostgreSQL
 
 ## Git
 
 - `main` is the production branch and the GitHub default.
 - Remote: https://github.com/elvanrafif/ledgerflow (public).
-- History is staged: 8 commits from repo init through API tests.
+- History is staged in small commits: repo init → Milestones 1-4 → SOLID refactor
+  (API service/repository layers, web feature hooks) → Milestone 5 artifacts
+  (security review, API docs, deploy assets, CI).

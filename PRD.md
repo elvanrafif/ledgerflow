@@ -1,7 +1,7 @@
 # LedgerFlow — Product Requirements Document (PRD)
 
 **Version:** 1.0  
-**Status:** MVP implemented. Milestones 1–4 done (backend, auth/transactions, business rules, frontend), verified against a live stack. Milestone 5 (release) in progress.  
+**Status:** MVP implemented and refactored (moderate SOLID pass, behavior-preserving). Milestones 1–4 done (backend, auth/transactions, business rules, frontend), verified against a live stack. Milestone 5 (release) in progress: security review, API docs, deploy assets, and CI are ready; deployment, screenshots, and the manual visual pass remain.  
 **Product Type:** Full-stack Web Application  
 **Primary Goal:** Demonstrate practical full-stack engineering skills through a working transaction management application.
 
@@ -117,7 +117,7 @@ Git repository with frontend/backend; PostgreSQL schema/migrations; synthetic se
 2. **Authentication and Transactions:** registration/sessions; create/list; authorization/validation; initial unit/integration tests. — **Done.**
 3. **Business Rules:** transitions; idempotency; history/atomic updates; filtering/pagination/dashboard. — **Done.**
 4. **Frontend:** auth pages; dashboard/table; form/detail; API integration/UI states. — **Done.** All six PRD §8 pages built, wired, and verified against a live stack. Found two backend bugs fixed (session cookie path; non-numeric amount returning 500).
-5. **Release:** security checks; tests; deployment; setup/API docs; publish demo/portfolio materials. — **In progress.**
+5. **Release:** security checks; tests; deployment; setup/API docs; publish demo/portfolio materials. — **In progress.** Security review (`docs/security-review.md`), API reference (`docs/api.md`), README, deploy assets (`apps/api/Dockerfile`, `vercel.json`, `docs/deployment.md`) and CI (`.github/workflows/ci.yml`) are done and verified; dependency advisories reduced to one dev-only. Remaining: deployment + live demo URL (synthetic data only), screenshots/demo walkthrough, and a manual visual pass at mobile + desktop widths.
 
 ## 16. Definition of Done
 
