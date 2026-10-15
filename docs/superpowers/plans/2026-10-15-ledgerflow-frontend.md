@@ -355,7 +355,7 @@ git commit -m "feat(web): add transaction list with URL-driven filters"
 - Consumes: `POST /api/v1/transactions` with `Idempotency-Key`.
 - Produces: a create form that reuses one idempotency key across retries.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 it("reuses the same idempotency key when a submit is retried", async () => {
@@ -371,23 +371,23 @@ it("reuses the same idempotency key when a submit is retried", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `bun run --cwd apps/web test`
 Expected: FAIL, `NewTransactionPage` is not defined.
 
-- [ ] **Step 3: Implement the form**
+- [x] **Step 3: Implement the form**
 
 Generate one idempotency key per payload; regenerate only when the payload
 changes. Client-side validation is for feedback only, amounts are sent as
 strings.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `bun run --cwd apps/web test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web
