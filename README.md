@@ -2,7 +2,9 @@
 
 A learning project for managing **simulated** transactions. It does not process payments or move money.
 
-The product requirements are in [PRD.md](./PRD.md). The backend API is implemented and tested; the web frontend and deployment are still to come.
+The product requirements are in [PRD.md](./PRD.md). The backend API, the web
+frontend, and Milestones 1–4 are implemented and tested; a moderate SOLID refactor
+of both apps is done. Release (Milestone 5) is in progress.
 
 **Where the build stands is in [STATUS.md](./STATUS.md)** — read that first, it is the single source of truth for what is done and what comes next.
 
@@ -10,8 +12,51 @@ The product requirements are in [PRD.md](./PRD.md). The backend API is implement
 
 - Bun for the runtime, package manager, and scripts
 - Express + TypeScript API
-- Next.js + TypeScript web app (planned)
+- Next.js + TypeScript web app
 - PostgreSQL with Prisma
+
+## Architecture
+
+Monorepo (Bun workspaces) with two apps. Both are organized by responsibility
+(level: moderate — split concerns, not one file per function).
+
+```
+ledgerflow/
+├─ apps/api/            Express API (thin routes → services → repositories)
+│  └─ src/
+│     ├─ routes/        transport only: parse, delegate, respond
+│     ├─ auth/          sessions, guards, rate limiting, account service
+│     ├─ transactions/  service (rules) + repository (Prisma) + status/amount/view
+│     ├─ http/          validation + CORS/Origin helpers
+│     └─ middleware/    error handler
+├─ apps/web/            Next.js app (App Router, feature folders)
+│  └─ src/
+│     ├─ app/           routed pages — thin composition
+│     ├─ features/      per-domain hooks + presentational components
+│     ├─ components/    shared UI primitives (Button, Field, Amount, …)
+│     └─ lib/           API client, types, filters, transitions
+└─ docs/                plans, API reference, security review
+```
+
+- **API** — routes never touch Prisma; business rules live in services, data
+  access in repositories. See [docs/api.md](./docs/api.md).
+- **Web** — each page is a thin shell over a feature hook (`use-transaction-list`,
+  `use-transaction-detail`, `use-create-transaction`, `use-auth-form`) plus
+  focused presentational pieces. Money is rendered from the API's string amounts.
+
+## Features
+
+- **Accounts** — register/login/logout with PostgreSQL-backed sessions
+  (`HttpOnly`, `SameSite=Lax`, `Secure` in production), bcrypt password hashing.
+- **Transactions** — create (with `Idempotency-Key`), owner-scoped list with
+  pagination/filter/search/sort, detail with status history, description edit
+  while `PENDING`.
+- **Status workflow** — `PENDING → PROCESSING | FAILED`, `PROCESSING → COMPLETED | FAILED`;
+  COMPLETED/FAILED are terminal. Transitions are atomic (row lock) and invalid
+  moves are rejected.
+- **Dashboard** — counts per status and totals **per currency** (never mixed).
+- **Web UI** — `/login`, `/register`, `/dashboard`, `/transactions`,
+  `/transactions/new`, `/transactions/[id]`, with empty/loading/error states.
 
 ## Local setup
 
@@ -24,7 +69,8 @@ docker compose up -d
 bun run db:generate
 bun run db:migrate
 bun run db:seed
-bun run dev:api
+bun run dev:api      # terminal 1 — http://localhost:4000
+bun run dev:web      # terminal 2 — http://localhost:3000
 ```
 
 Set `SESSION_SECRET` in `.env` to a random string of at least 32 characters. The seed
@@ -33,15 +79,9 @@ command creates one synthetic local user; set `SEED_USER_PASSWORD` and it is sto
 Run the test suite with `bun run test` and typecheck with `bun run typecheck` (tests
 require the Docker PostgreSQL instance to be running).
 
-## Current status
+## API
 
-- [x] PRD captured in this repository
-- [x] API and database foundation
-- [x] Authentication (register/login/logout) and transaction workflows
-- [ ] Frontend
-- [ ] Deployment
-
-### API endpoints (all under `/api/v1`)
+Full reference with request/response examples: [docs/api.md](./docs/api.md).
 
 | Method | Path | Notes |
 | --- | --- | --- |
@@ -60,4 +100,25 @@ require the Docker PostgreSQL instance to be running).
 Sessions are stored in PostgreSQL; state-changing cookie-authenticated requests
 must send an `Origin` matching `FRONTEND_ORIGIN` (CSRF protection).
 
-No live demo is available yet. See the [Milestone 1 plan](./docs/superpowers/plans/2026-10-15-ledgerflow-milestone-1.md) for the first implementation steps.
+## Security
+
+The security review (PRD §11) is in [docs/security-review.md](./docs/security-review.md).
+Highlights: Origin-checked CSRF, hashed session tokens, Zod-validated input,
+consistent error shape with no internals leaked in production.
+
+## Limitations
+
+- **Simulated only** — no real payments, transfers, or money movement.
+- **Single-origin CSRF model** — multi-origin frontends would need a token scheme.
+- **In-memory rate limiting** — per-process; a shared store (e.g. Redis) is needed
+  to scale to multiple API instances.
+- **No live demo yet** — deployment (Milestone 5) is pending.
+
+## Status
+
+- [x] PRD captured in this repository
+- [x] API and database foundation
+- [x] Authentication (register/login/logout) and transaction workflows
+- [x] Frontend (auth, dashboard, list, create, detail/edit/transitions)
+- [x] SOLID refactor of API + web (behavior-preserving)
+- [ ] Deployment
