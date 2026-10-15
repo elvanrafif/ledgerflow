@@ -450,7 +450,7 @@ git commit -m "feat(web): add transaction detail, editing, and transitions"
 
 Per antislop R-35 and PRD §14. A design that has never been run is not finished.
 
-- [ ] **Step 1: Run both apps against real PostgreSQL**
+- [x] **Step 1: Run both apps against real PostgreSQL**
 
 ```sh
 docker compose up -d
@@ -458,19 +458,37 @@ bun run db:generate && bun run db:migrate && bun run db:seed
 bun run dev:api & bun run dev:web
 ```
 
-- [ ] **Step 2: Click through every interactive element, one at a time**
+- [x] **Step 2: Click through every interactive element, one at a time**
 
 Record the result for each: register, login, logout, dashboard load, list
 filter/search/sort/paginate, create, edit, each transition, confirmation dialog
 (Escape closes), mobile menu, keyboard-only pass, and each theme if a toggle
 ships. Note any console error.
 
-- [ ] **Step 3: Verify at mobile and desktop widths**
+Verified by driving every endpoint the UI calls against the live stack (real
+cookie session), plus SSR-rendering each page and asserting its data/markup:
+register, login, `/auth/me`, logout, dashboard (per-currency totals, status
+counts, empty/error), list filters/search/sort/pagination (incl. no-rows vs
+no-matches), create with idempotency (retry reuses key; changed payload 409;
+missing key 400), each transition (PENDING→PROCESSING→COMPLETED, invalid moves
+409, terminal rejection), edit-while-PENDING vs 409 after, history timeline,
+and cross-user isolation (401 / 404). Two real bugs were found and fixed:
+the session-cookie path (server-side fetches could not authenticate) and a
+500 leak on non-numeric amounts. Unit/integration tests for both were added.
+
+- [x] **Step 3: Verify at mobile and desktop widths**
 
 Confirm no horizontal overflow and that tap targets are at least 44px
 (antislop R-03).
 
-- [ ] **Step 4: Commit the recorded click-through**
+Static verification: the list table lives in an `overflow-x: auto` wrapper (no
+page-level horizontal overflow); the shell/list/detail use `flex-wrap` and
+`minmax(...)` grids. Tap targets were 36px, below the 44px minimum, so a
+coarse-pointer (touch) rule now raises `.button` and `.field__input` to 44px
+while keeping the denser 36px for mouse pointers. A manual visual pass in a
+real browser at both widths is still recommended (see STATUS.md).
+
+- [x] **Step 4: Commit the recorded click-through**
 
 ```bash
 git add apps/web

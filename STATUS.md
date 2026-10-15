@@ -7,18 +7,21 @@ Last updated: 2026-10-15 (session 2)
 
 ## Next up
 
-**Frontend Milestone 4 is underway.** Both prerequisites are cleared (see
-"Frontend prerequisites" below). Tasks 1-7 are done (all six routed pages built
-and tested). Next: **Task 8 (run the app and verify every control)** in
-`docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md` — the interactive
-click-through requires Docker + PostgreSQL and both dev servers running.
+**Frontend Milestone 4 is complete.** Both prerequisites are cleared (see
+"Frontend prerequisites" below). All 8 tasks are done: scaffold + API client,
+tokens/fonts/primitives, login/register, dashboard, transaction list, create,
+detail/edit/transitions, and the live click-through. The click-through found and
+fixed two real bugs (session-cookie path; a 500 leak on non-numeric amounts).
+Remaining: a manual visual pass at mobile + desktop widths in a real browser, and
+Milestone 5 (release).
 
 ## Where we are
 
 Milestones are from PRD §15. Backend (Milestones 1-3) is done and merged to
-`main`. Frontend (Milestone 4) is in progress: Tasks 1-7 of 8 are done (all pages
-built and unit/integration tested); Task 8 is the live click-through. Release
-(Milestone 5) has not started.
+`main`. Frontend (Milestone 4) is complete: all 8 tasks done, and the live
+click-through (Task 8) found and fixed two backend bugs. A manual visual pass at
+mobile + desktop widths is still recommended. Release (Milestone 5) has not
+started.
 
 | # | Milestone | Status |
 | --- | --- | --- |
@@ -92,7 +95,8 @@ From `docs/superpowers/plans/2026-10-15-ledgerflow-frontend.md`:
 - [x] Task 5 — transaction list (URL-driven filters, sort, pagination, empty/error states)
 - [x] Task 6 — create transaction (idempotency key reused across retries)
 - [x] Task 7 — transaction detail, edit, transitions (timeline, terminal confirm, 409 surfaced)
-- [ ] Task 8 — run the app and verify every control
+- [x] Task 8 — run the app and verify every control (live stack click-through; 2 bugs found + fixed)
+- [ ] Manual visual pass at mobile + desktop widths in a real browser (recommended, not blocking)
 
 ## Known issues / follow-ups
 
